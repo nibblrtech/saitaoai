@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^npm install -D typescript vitest tsx @types/node @nielspeter/ts-archunit$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}
