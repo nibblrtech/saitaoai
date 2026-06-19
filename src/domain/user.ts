@@ -7,5 +7,5 @@ export interface User {
 }
 
 export function createUser(id: string, email: string): User {
-  return { id, email/*, userRepository: new UserRepository()*/ };
+  return { id, email};//, userRepository: new UserRepository() };
 }
