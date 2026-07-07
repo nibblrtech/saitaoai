@@ -50,7 +50,7 @@ Chosen option: In-memory single-writer limit order book per instrument with appe
 
 ## Compliance Constraints
 
-- The order book component shall maintain separate bid-side and ask-side structures for each instrument and shall not share mutable state across instruments.
+- The order book component shall maintain separate bid-side and ask-side structures for each instrument and shall not share mutable state across instruments--even if they want to.
 - The order book component shall enforce instrument-level isolation so that events for one instrument cannot mutate another instrument book.
 - The order book component shall treat all accepted state transitions as a totally ordered sequence of events per instrument.
 - The order book component shall apply events in sequence order and shall reject out-of-order mutation events unless an explicit recovery mode is active.
