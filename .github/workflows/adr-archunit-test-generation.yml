@@ -67,16 +67,21 @@ jobs:
       - name: Generate or update ArchUnit tests with Copilot
         if: steps.changed_adrs.outputs.has_changes == 'true'
         env:
-          COPILOT_GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
           ADR_FILES: ${{ steps.changed_adrs.outputs.adr_files }}
         shell: bash
         run: |
           set -euo pipefail
 
           if [[ -z "${COPILOT_GITHUB_TOKEN:-}" ]]; then
-            echo "Missing required secret: PERSONAL_ACCESS_TOKEN"
+            echo "Missing required secret: COPILOT_GITHUB_TOKEN"
+            echo "Create a Fine-Grained PAT and add repository secret COPILOT_GITHUB_TOKEN."
+            echo "Required token permission: Copilot Requests (enabled)."
             exit 1
           fi
+
+          # Fast preflight to fail with a clear auth error before processing ADR files.
+          copilot -p "Reply with: auth-ok" --allow-tool=none --no-ask-user >/dev/null
 
           while IFS= read -r ADR_FILE; do
             [[ -z "$ADR_FILE" ]] && continue
