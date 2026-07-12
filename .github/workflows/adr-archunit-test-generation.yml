@@ -75,11 +75,9 @@ jobs:
         run: |
           set -euo pipefail
 
-          if [[ -z "${COPILOT_GITHUB_TOKEN:-}" && -z "${GH_TOKEN:-}" ]]; then
-            echo "Missing authentication token. Set COPILOT_GITHUB_TOKEN secret or grant models: read permission."
-            echo "Create a Fine-Grained PAT and add repository secret COPILOT_GITHUB_TOKEN."
-            echo "Required token permission: Copilot Requests (enabled)."
-            exit 1
+          if [[ -z "${COPILOT_GITHUB_TOKEN:-}" ]]; then
+            echo "COPILOT_GITHUB_TOKEN secret is not set; falling back to the built-in GITHUB_TOKEN via GH_TOKEN."
+            echo "If authentication fails, create a Fine-Grained PAT with the 'Copilot Requests' permission and add it as the COPILOT_GITHUB_TOKEN repository secret."
           fi
 
           # Fast preflight to fail with a clear auth error before processing ADR files.
