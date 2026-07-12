@@ -8,8 +8,7 @@ on:
       - "docs/decisions/**"
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   generate-adr-tests:
@@ -111,6 +110,7 @@ jobs:
         if: steps.changed_adrs.outputs.has_changes == 'true' && steps.detect_changes.outputs.tests_changed == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           commit-message: "test: generate ArchUnit tests from ADR compliance constraints"
           branch: "copilot/adr-archunit-tests-${{ github.run_id }}"
           title: "test: update ArchUnit tests from ADR changes"
