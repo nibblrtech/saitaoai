@@ -17,7 +17,7 @@ The decision scope is the internal design of one order book instance per instrum
 ## Decision Drivers
 
 ## This is a test of the emergency broadcast system
-## If this had been an actual emergency...you'd be dead.
+## If this had been an actual emergency...something something something
 
 - Determinism and replayability under identical event streams.
 - Fairness through strict queueing semantics.
