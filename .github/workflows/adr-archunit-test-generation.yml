@@ -89,7 +89,25 @@ jobs:
 
             PROMPT="look at the Compliance Constraints of the checked in file ${ADR_FILE}. create or update the set of arch unit tests for that component. put the tests under the tests folder, named: ${TARGET_TEST_FILE}. keep tests in TypeScript using vitest and @nielspeter/ts-archunit patterns from this repository. preserve existing tests and only modify/create ${TARGET_TEST_FILE} for this ADR."
 
-            copilot -p "$PROMPT" --allow-tool=write --allow-tool='shell(git:*)' --no-ask-user
+            copilot -p "$PROMPT" \
+              --allow-tool=write \
+              --allow-tool='shell(cat:*)' \
+              --allow-tool='shell(ls:*)' \
+              --allow-tool='shell(find:*)' \
+              --allow-tool='shell(grep:*)' \
+              --allow-tool='shell(node:*)' \
+              --allow-tool='shell(npm:*)' \
+              --allow-tool='shell(npx:*)' \
+              --allow-tool='shell(which:*)' \
+              --allow-tool='shell(head:*)' \
+              --allow-tool='shell(tail:*)' \
+              --allow-tool='shell(env:*)' \
+              --allow-tool='shell(pwd:*)' \
+              --allow-tool='shell(whoami:*)' \
+              --allow-tool='shell(echo:*)' \
+              --allow-tool='shell(true:*)' \
+              --allow-tool='shell(git:*)' \
+              --no-ask-user
           done <<< "$ADR_FILES"
 
       - name: Run test suite
