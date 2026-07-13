@@ -7,13 +7,12 @@ on:
     paths:
       - "docs/decisions/**"
 
-permissions:
-  contents: read
-  models: read
-
 jobs:
   generate-adr-tests:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      copilot-requests: write
 
     steps:
       - name: Checkout
