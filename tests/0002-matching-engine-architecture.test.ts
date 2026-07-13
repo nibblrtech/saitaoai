@@ -138,4 +138,62 @@ describe("ADR-0002: Matching Engine Architecture – Compliance Constraints", ()
       })
       .check();
   });
+
+  it("matching engine should not call order book repository implementations directly", () => {
+    modules(p)
+      .that()
+      .resideInFolder("**/src/matching-engine/**")
+      .should()
+      .notImportFrom("**/src/order-book/infrastructure/**")
+      .rule({
+        id: "matching-engine/no-direct-order-book-repository-import",
+        because:
+          "The matching engine component shall call the order book only through a domain-defined order book port interface and shall not call order book repository implementations directly",
+        suggestion:
+          "Depend on the order book domain port interface; inject the concrete repository implementation via dependency injection at the composition root",
+      })
+      .check();
+  });
+
+  it("matching engine domain layer should not import order entry gateway infrastructure or transport directly", () => {
+    modules(p)
+      .that()
+      .resideInFolder("**/src/matching-engine/domain/**")
+      .should()
+      .notImportFrom(
+        "**/src/order-entry-gateway/infrastructure/**",
+        "**/src/order-entry-gateway/transport/**"
+      )
+      .rule({
+        id: "matching-engine/no-direct-order-entry-gateway-import",
+        because:
+          "The matching engine component shall consume only validated order-intent events from the order entry gateway and shall reject malformed or unauthenticated inputs",
+        suggestion:
+          "Consume validated order-intent events through a domain-defined port or application-layer adapter rather than importing gateway infrastructure or transport code directly",
+      })
+      .check();
+  });
+
+  it("matching engine domain classes should not import persistence framework packages", () => {
+    modules(p)
+      .that()
+      .resideInFolder("**/src/matching-engine/domain/**")
+      .should()
+      .notImportFrom(
+        "typeorm",
+        "prisma",
+        "@prisma/client",
+        "mongoose",
+        "sequelize",
+        "**/persistence/**"
+      )
+      .rule({
+        id: "matching-engine/no-persistence-framework-imports-in-core",
+        because:
+          "The matching engine component shall not import client protocol codecs for FIX, OUCH, WebSocket, REST, or persistence frameworks in core matching classes",
+        suggestion:
+          "Keep persistence framework usage in infrastructure repository implementations; core matching classes should depend only on domain-defined repository interfaces",
+      })
+      .check();
+  });
 });
