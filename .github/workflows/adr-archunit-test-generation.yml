@@ -146,4 +146,4 @@ jobs:
             - Alignment with existing architecture boundaries
           add-paths: |
             tests/*.test.ts
-            tests/**/*.test.ts
+            :(glob)tests/**/*.test.ts
