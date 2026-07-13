@@ -9,6 +9,7 @@ informed: Platform Engineering
 # ADR-0003: Design the Market Data Distribution System
 
 ## Context and Problem Statement
+## some more changes
 
 The exchange needs a market data distribution system that publishes executions, order status updates, and order book changes to internal and external consumers with low latency and strong consistency guarantees.
 The distribution design must support feed products, snapshot and recovery flows, and operational resilience while keeping transport adapters isolated from core sequencing logic.
