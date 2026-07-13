@@ -67,17 +67,15 @@ jobs:
       - name: Generate or update ArchUnit tests with Copilot
         if: steps.changed_adrs.outputs.has_changes == 'true'
         env:
-          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-          GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN || github.token }}
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
           ADR_FILES: ${{ steps.changed_adrs.outputs.adr_files }}
         shell: bash
         run: |
           set -euo pipefail
 
-          if [[ -z "${COPILOT_GITHUB_TOKEN:-}" ]]; then
-            echo "COPILOT_GITHUB_TOKEN secret is not set; falling back to the built-in GITHUB_TOKEN via GH_TOKEN."
-            echo "If authentication fails, create a Fine-Grained PAT with the 'Copilot Requests' permission and add it as the COPILOT_GITHUB_TOKEN repository secret."
-          fi
+          # Ensure no stale COPILOT_GITHUB_TOKEN value can override native token auth.
+          unset COPILOT_GITHUB_TOKEN || true
 
           # Fast preflight to fail with a clear auth error before processing ADR files.
           copilot -p "Reply with: auth-ok" --allow-tool=none --no-ask-user >/dev/null
