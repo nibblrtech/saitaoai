@@ -138,4 +138,67 @@ describe("ADR-0002: Matching Engine Architecture – Compliance Constraints", ()
       })
       .check();
   });
+
+  it("matching engine should call the order book only through the domain-defined order book port and not import order book infrastructure directly", () => {
+    modules(p)
+      .that()
+      .resideInFolder(
+        "**/src/matching-engine/domain/**",
+        "**/src/matching-engine/application/**"
+      )
+      .should()
+      .notImportFrom(
+        "**/src/order-book/infrastructure/**",
+        "**/src/order-book/**/*Repository*"
+      )
+      .rule({
+        id: "matching-engine/order-book-via-port-only",
+        because:
+          "The matching engine component shall call the order book only through a domain-defined order book port interface and shall not call order book repository implementations directly",
+        suggestion:
+          "Depend on an order-book port interface owned by the matching engine domain; inject the concrete order-book repository via dependency injection at the composition root",
+      })
+      .check();
+  });
+
+  it("matching engine core classes should not import persistence framework packages", () => {
+    modules(p)
+      .that()
+      .resideInFolder("**/src/matching-engine/domain/**")
+      .should()
+      .notImportFrom(
+        "typeorm",
+        "prisma",
+        "@prisma/client",
+        "mongoose",
+        "sequelize",
+        "**/persistence/**",
+        "**/adapters/database/**"
+      )
+      .rule({
+        id: "matching-engine/no-persistence-framework-imports-in-core",
+        because:
+          "The matching engine component shall not import client protocol codecs for FIX, OUCH, WebSocket, REST, or persistence frameworks in core matching classes",
+        suggestion:
+          "Keep persistence framework usage in infrastructure repository implementations behind a domain-owned port interface",
+      })
+      .check();
+  });
+
+  it("matching engine should not implement auction matching logic in v1", () => {
+    classes(p)
+      .that()
+      .haveNameMatching(/Auction/i)
+      .resideInFolder("**/src/matching-engine/**")
+      .should()
+      .notExist()
+      .rule({
+        id: "matching-engine/no-auction-matching-v1",
+        because:
+          "The matching engine component shall not implement auction matching logic in v1",
+        suggestion:
+          "Remove Auction* matching classes from v1; defer auction matching policy to a future ADR",
+      })
+      .check();
+  });
 });
