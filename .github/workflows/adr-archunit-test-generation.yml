@@ -116,6 +116,13 @@ jobs:
           ADR_CONSTRAINT_MAPPING_JSON: ${{ vars.ADR_CONSTRAINT_MAPPING_JSON }}
         run: node scripts/sync-adr-constraint-tests.mjs
 
+      - name: Re-sync mapped non-ArchUnit compliance tests before verify
+        if: steps.changed_adrs.outputs.has_changes == 'true'
+        env:
+          ADR_FILES: ${{ steps.changed_adrs.outputs.adr_files }}
+          ADR_CONSTRAINT_MAPPING_JSON: ${{ vars.ADR_CONSTRAINT_MAPPING_JSON }}
+        run: node scripts/sync-adr-constraint-tests.mjs
+
       - name: Verify ADR compliance constraint coverage
         if: steps.changed_adrs.outputs.has_changes == 'true'
         env:
