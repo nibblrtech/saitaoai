@@ -4,10 +4,6 @@
 name: Node.js CI
 
 on:
-  push:
-    branches: [ "main", "master" ]
-    paths-ignore:
-      - "docs/decisions/**"
   pull_request:
     branches: [ "main", "master" ]
     paths-ignore:
