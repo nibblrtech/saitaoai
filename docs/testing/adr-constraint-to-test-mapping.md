@@ -113,7 +113,7 @@ Shared library usage across repos:
       "id": "compliance-quantity-and-lifecycle-invariants",
       "pattern": "(quantity|partial fill|remaining open|lifecycle|execution identifiers|idempotent|at-most-once)",
       "testType": "compliance-generated",
-      "template": "todo-constraint"
+      "template": "quantity-lifecycle-evidence"
     },
     {
       "id": "compliance-metrics-and-operations",

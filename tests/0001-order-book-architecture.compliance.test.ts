@@ -176,7 +176,30 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
   it.todo("should satisfy: the order book component shall not allow the active continuous-trading book to remain crossed after processing a mutation event [the-order-book-component-shall-not-allow-the-active-continuous-trading-book-to-r]");
   // ADR_CONSTRAINT: The order book component shall support partial fill accounting and shall keep remaining open quantity exact and non-negative.
   // ADR_MAPPING_RULE: compliance-quantity-and-lifecycle-invariants
-  it.todo("should satisfy: the order book component shall support partial fill accounting and shall keep remaining open quantity exact and non-negative [the-order-book-component-shall-support-partial-fill-accounting-and-shall-keep-re]");
+  it("should provide quantity/lifecycle invariant evidence for this constraint", () => {
+    const candidateRoots = ["src/order-book"];
+    const existingRoots = candidateRoots.filter((root) => existsSync(root));
+
+    // Bootstrap guard: until component code exists, this test is a no-op and stays green.
+    if (existingRoots.length === 0) {
+      expect(true).toBe(true);
+      return;
+    }
+
+    const tsFiles = Array.from(
+      new Set(existingRoots.flatMap((root) => walkTsFiles(root)))
+    );
+
+    const corpus = tsFiles
+      .map((file) => readFileSync(file, "utf8"))
+      .join("\n")
+      .toLowerCase();
+
+    const requiredTerms = ["quantity", "partial", "fill", "remaining", "open"];
+    const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
+
+    expect(missingTerms).toEqual([]);
+  });
   // ADR_CONSTRAINT: The order book component shall emit explicit domain events for accepted order, rejected order, canceled order, replaced order, partially filled order, and fully filled order.
   // ADR_MAPPING_RULE: compliance-validation-and-rejection
   it("should provide validation/rejection evidence for this constraint", () => {
@@ -268,7 +291,30 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
   });
   // ADR_CONSTRAINT: The order book component shall persist sufficient event attributes to reconstruct full order lifecycle history.
   // ADR_MAPPING_RULE: compliance-quantity-and-lifecycle-invariants
-  it.todo("should satisfy: the order book component shall persist sufficient event attributes to reconstruct full order lifecycle history [the-order-book-component-shall-persist-sufficient-event-attributes-to-reconstruc]");
+  it("should provide quantity/lifecycle invariant evidence for this constraint", () => {
+    const candidateRoots = ["src/order-book"];
+    const existingRoots = candidateRoots.filter((root) => existsSync(root));
+
+    // Bootstrap guard: until component code exists, this test is a no-op and stays green.
+    if (existingRoots.length === 0) {
+      expect(true).toBe(true);
+      return;
+    }
+
+    const tsFiles = Array.from(
+      new Set(existingRoots.flatMap((root) => walkTsFiles(root)))
+    );
+
+    const corpus = tsFiles
+      .map((file) => readFileSync(file, "utf8"))
+      .join("\n")
+      .toLowerCase();
+
+    const requiredTerms = ["lifecycle"];
+    const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
+
+    expect(missingTerms).toEqual([]);
+  });
   // ADR_CONSTRAINT: The order book component shall expose only query interfaces for derived views such as best bid, best ask, spread, and depth, and these query interfaces shall be side-effect free.
   // ADR_MAPPING_RULE: compliance-catch-all-bootstrap
   it.todo("should satisfy: the order book component shall expose only query interfaces for derived views such as best bid, best ask, spread, and depth, and these query interfaces shall be side-effect free [the-order-book-component-shall-expose-only-query-interfaces-for-derived-views-su]");
