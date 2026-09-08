@@ -107,7 +107,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["engine"];
+    const requiredTerms = ["engine", "priority"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -438,7 +438,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["engine", "event"];
+    const requiredTerms = ["engine", "authoritative", "event"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {

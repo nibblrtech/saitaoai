@@ -312,13 +312,21 @@ function generalEvidenceTermsFromConstraint(constraint) {
     .map((t) => t.trim())
     .filter((t) => t.length >= 4 && !stopWords.has(t));
 
+  const quoted = quotedStrings(constraint)
+    .map((v) => v.toLowerCase().replace(/[^a-z0-9\s-]/g, " ").trim())
+    .filter(Boolean)
+    .flatMap((v) => v.split(/\s+/))
+    .filter((t) => t.length >= 3 && !stopWords.has(t));
+
   const preferred = tokens.filter((t) =>
-    /(event|order|state|session|book|engine|market|data|channel|feed|journal|schema|snapshot|recovery|publish|private|public)/.test(
+    /(event|order|state|session|book|engine|market|data|channel|feed|journal|schema|snapshot|recovery|publish|private|public|instrument|participant|identifier|metadata|immutable|monotonic|clock|timestamp|lifecycle|quantity|partial|filled|cancel|replace|priority|queue|tick|spread|depth|archive|retention|latency|metric|audit|auth|encrypt|confidential|failover|backpressure)/.test(
       t
     )
   );
 
-  const selected = preferred.length > 0 ? preferred : tokens;
+  // Intentionally avoid broad fallback to arbitrary tokens (for example,
+  // "fields", "whose", "name") which causes false negatives in bootstrap codebases.
+  const selected = preferred.length > 0 ? [...quoted, ...preferred] : quoted;
   const unique = Array.from(new Set(selected));
 
   return unique.slice(0, 3);
