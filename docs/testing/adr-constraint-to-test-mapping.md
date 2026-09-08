@@ -119,19 +119,19 @@ Shared library usage across repos:
       "id": "compliance-metrics-and-operations",
       "pattern": "(metrics|latency|archive|retention|failover|backpressure|kill-switch|operator alerts)",
       "testType": "compliance-generated",
-      "template": "todo-constraint"
+      "template": "metrics-ops-evidence"
     },
     {
       "id": "compliance-security-and-privacy",
       "pattern": "(authentication|encrypt|entitlement|confidential|personally identifiable|private)",
       "testType": "compliance-generated",
-      "template": "todo-constraint"
+      "template": "security-privacy-evidence"
     },
     {
       "id": "compliance-catch-all-bootstrap",
       "pattern": ".+",
       "testType": "compliance-generated",
-      "template": "todo-constraint"
+      "template": "general-evidence"
     }
   ]
 }

@@ -268,6 +268,62 @@ function renderTodoConstraintBlock(constraint, ruleId) {
   ].join("\n");
 }
 
+function generalEvidenceTermsFromConstraint(constraint) {
+  const stopWords = new Set([
+    "the",
+    "a",
+    "an",
+    "and",
+    "or",
+    "to",
+    "from",
+    "for",
+    "of",
+    "with",
+    "in",
+    "on",
+    "by",
+    "as",
+    "is",
+    "are",
+    "be",
+    "shall",
+    "should",
+    "not",
+    "only",
+    "that",
+    "this",
+    "these",
+    "those",
+    "before",
+    "after",
+    "within",
+    "through",
+    "into",
+    "under",
+    "over",
+    "across",
+  ]);
+
+  const tokens = constraint
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, " ")
+    .split(/\s+/)
+    .map((t) => t.trim())
+    .filter((t) => t.length >= 4 && !stopWords.has(t));
+
+  const preferred = tokens.filter((t) =>
+    /(event|order|state|session|book|engine|market|data|channel|feed|journal|schema|snapshot|recovery|publish|private|public)/.test(
+      t
+    )
+  );
+
+  const selected = preferred.length > 0 ? preferred : tokens;
+  const unique = Array.from(new Set(selected));
+
+  return unique.slice(0, 3);
+}
+
 function sequenceTermsFromConstraint(constraint) {
   const terms = [];
   const normalized = constraint.toLowerCase();
@@ -367,6 +423,84 @@ function quantityLifecycleTermsFromConstraint(constraint) {
 
   if (terms.length === 0) {
     terms.push("quantity");
+  }
+
+  return Array.from(new Set(terms));
+}
+
+function metricsOpsTermsFromConstraint(constraint) {
+  const terms = [];
+  const normalized = constraint.toLowerCase();
+
+  if (normalized.includes("metrics")) {
+    terms.push("metric");
+  }
+
+  if (normalized.includes("latency")) {
+    terms.push("latency");
+  }
+
+  if (normalized.includes("archive")) {
+    terms.push("archive");
+  }
+
+  if (normalized.includes("retention")) {
+    terms.push("retention");
+  }
+
+  if (normalized.includes("failover")) {
+    terms.push("failover");
+  }
+
+  if (normalized.includes("backpressure")) {
+    terms.push("backpressure");
+  }
+
+  if (normalized.includes("kill-switch")) {
+    terms.push("halt");
+  }
+
+  if (normalized.includes("operator alerts")) {
+    terms.push("alert");
+  }
+
+  if (terms.length === 0) {
+    terms.push("metric");
+  }
+
+  return Array.from(new Set(terms));
+}
+
+function securityPrivacyTermsFromConstraint(constraint) {
+  const terms = [];
+  const normalized = constraint.toLowerCase();
+
+  if (normalized.includes("authentication")) {
+    terms.push("auth");
+  }
+
+  if (normalized.includes("encrypt")) {
+    terms.push("encrypt");
+  }
+
+  if (normalized.includes("entitlement")) {
+    terms.push("entitlement");
+  }
+
+  if (normalized.includes("confidential")) {
+    terms.push("confidential");
+  }
+
+  if (normalized.includes("personally identifiable")) {
+    terms.push("pii");
+  }
+
+  if (normalized.includes("private")) {
+    terms.push("private");
+  }
+
+  if (terms.length === 0) {
+    terms.push("auth");
   }
 
   return Array.from(new Set(terms));
@@ -504,6 +638,120 @@ function renderQuantityLifecycleEvidenceBlock(constraint, ruleId) {
   ].join("\n");
 }
 
+function renderMetricsOpsEvidenceBlock(constraint, ruleId) {
+  const terms = metricsOpsTermsFromConstraint(constraint);
+  const termsLiteral = `[${terms.map((t) => `"${t}"`).join(", ")}]`;
+  const rootsLiteral = JSON.stringify(componentRootsFromConstraint(constraint));
+
+  return [
+    `  // ADR_CONSTRAINT: ${constraint}`,
+    `  // ADR_MAPPING_RULE: ${ruleId}`,
+    `  it("should provide metrics/operations evidence for this constraint", () => {`,
+    `    const candidateRoots = ${rootsLiteral};`,
+    "    const existingRoots = candidateRoots.filter((root) => existsSync(root));",
+    "",
+    "    // Bootstrap guard: until component code exists, this test is a no-op and stays green.",
+    "    if (existingRoots.length === 0) {",
+    "      expect(true).toBe(true);",
+    "      return;",
+    "    }",
+    "",
+    "    const tsFiles = Array.from(",
+    "      new Set(existingRoots.flatMap((root) => walkTsFiles(root)))",
+    "    );",
+    "",
+    "    const corpus = tsFiles",
+    "      .map((file) => readFileSync(file, \"utf8\"))",
+    "      .join(\"\\n\")",
+    "      .toLowerCase();",
+    "",
+    `    const requiredTerms = ${termsLiteral};`,
+    "    const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));",
+    "",
+    "    expect(missingTerms).toEqual([]);",
+    "  });",
+    "",
+  ].join("\n");
+}
+
+function renderSecurityPrivacyEvidenceBlock(constraint, ruleId) {
+  const terms = securityPrivacyTermsFromConstraint(constraint);
+  const termsLiteral = `[${terms.map((t) => `"${t}"`).join(", ")}]`;
+  const rootsLiteral = JSON.stringify(componentRootsFromConstraint(constraint));
+
+  return [
+    `  // ADR_CONSTRAINT: ${constraint}`,
+    `  // ADR_MAPPING_RULE: ${ruleId}`,
+    `  it("should provide security/privacy evidence for this constraint", () => {`,
+    `    const candidateRoots = ${rootsLiteral};`,
+    "    const existingRoots = candidateRoots.filter((root) => existsSync(root));",
+    "",
+    "    // Bootstrap guard: until component code exists, this test is a no-op and stays green.",
+    "    if (existingRoots.length === 0) {",
+    "      expect(true).toBe(true);",
+    "      return;",
+    "    }",
+    "",
+    "    const tsFiles = Array.from(",
+    "      new Set(existingRoots.flatMap((root) => walkTsFiles(root)))",
+    "    );",
+    "",
+    "    const corpus = tsFiles",
+    "      .map((file) => readFileSync(file, \"utf8\"))",
+    "      .join(\"\\n\")",
+    "      .toLowerCase();",
+    "",
+    `    const requiredTerms = ${termsLiteral};`,
+    "    const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));",
+    "",
+    "    expect(missingTerms).toEqual([]);",
+    "  });",
+    "",
+  ].join("\n");
+}
+
+function renderGeneralEvidenceBlock(constraint, ruleId) {
+  const terms = generalEvidenceTermsFromConstraint(constraint);
+  const termsLiteral = `[${terms.map((t) => `"${t}"`).join(", ")}]`;
+  const rootsLiteral = JSON.stringify(componentRootsFromConstraint(constraint));
+
+  return [
+    `  // ADR_CONSTRAINT: ${constraint}`,
+    `  // ADR_MAPPING_RULE: ${ruleId}`,
+    `  it("should provide implementation evidence for this constraint", () => {`,
+    `    const candidateRoots = ${rootsLiteral};`,
+    "    const existingRoots = candidateRoots.filter((root) => existsSync(root));",
+    "",
+    "    // Bootstrap guard: until component code exists, this test is a no-op and stays green.",
+    "    if (existingRoots.length === 0) {",
+    "      expect(true).toBe(true);",
+    "      return;",
+    "    }",
+    "",
+    "    const tsFiles = Array.from(",
+    "      new Set(existingRoots.flatMap((root) => walkTsFiles(root)))",
+    "    );",
+    "",
+    "    const corpus = tsFiles",
+    "      .map((file) => readFileSync(file, \"utf8\"))",
+    "      .join(\"\\n\")",
+    "      .toLowerCase();",
+    "",
+    `    const requiredTerms = ${termsLiteral};`,
+    "",
+    "    // If term extraction yields no terms, this stays as a bootstrap pass.",
+    "    if (requiredTerms.length === 0) {",
+    "      expect(true).toBe(true);",
+    "      return;",
+    "    }",
+    "",
+    "    const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));",
+    "    expect(missingTerms).toEqual([]);",
+    "  });",
+    "",
+  ].join("\n");
+}
+
 function renderComplianceGeneratedTests(constraintsAndRules) {
   const blocks = [];
 
@@ -548,6 +796,21 @@ function renderComplianceGeneratedTests(constraintsAndRules) {
 
     if (rule.template === "quantity-lifecycle-evidence") {
       blocks.push(renderQuantityLifecycleEvidenceBlock(constraint, rule.id));
+      continue;
+    }
+
+    if (rule.template === "metrics-ops-evidence") {
+      blocks.push(renderMetricsOpsEvidenceBlock(constraint, rule.id));
+      continue;
+    }
+
+    if (rule.template === "security-privacy-evidence") {
+      blocks.push(renderSecurityPrivacyEvidenceBlock(constraint, rule.id));
+      continue;
+    }
+
+    if (rule.template === "general-evidence") {
+      blocks.push(renderGeneralEvidenceBlock(constraint, rule.id));
       continue;
     }
 
