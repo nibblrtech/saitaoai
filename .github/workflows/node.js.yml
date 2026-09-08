@@ -4,10 +4,10 @@
 name: Node.js CI
 
 on:
+  push:
+    branches-ignore: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
-    paths-ignore:
-      - "docs/decisions/**"
 
 jobs:
   build:
@@ -28,4 +28,12 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npm run build
+    - name: Sync mapped non-ArchUnit compliance tests
+      env:
+        ADR_CONSTRAINT_MAPPING_JSON: ${{ vars.ADR_CONSTRAINT_MAPPING_JSON }}
+      run: ADR_FILES="$(printf '%s\n' docs/decisions/*.md)" node scripts/sync-adr-constraint-tests.mjs
+    - name: Verify ADR compliance constraint coverage
+      env:
+        ADR_CONSTRAINT_MAPPING_JSON: ${{ vars.ADR_CONSTRAINT_MAPPING_JSON }}
+      run: ADR_FILES="$(printf '%s\n' docs/decisions/*.md)" node scripts/verify-adr-constraint-coverage.mjs
     - run: npm run test

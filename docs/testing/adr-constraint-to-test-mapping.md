@@ -93,7 +93,7 @@ Shared library usage across repos:
     },
     {
       "id": "compliance-prefix-literal-ban",
-      "pattern": "\\bfield\\b.*\\bshould not have prefix\\b.*[\"'].*[\"']",
+      "pattern": "\\bfields?\\b.*\\bshould not have prefix\\b.*[\"'].*[\"']",
       "testType": "compliance-generated",
       "template": "prefix-literal-ban"
     },

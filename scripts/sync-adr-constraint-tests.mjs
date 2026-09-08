@@ -148,13 +148,15 @@ function renderPrefixLiteralBlock(constraint, ruleId) {
     );
   }
 
-  const firstPrefix = quoted[0];
-  const escapedPrefix = escapeRegexLiteral(firstPrefix);
+  // Prefer a quoted token that explicitly looks like a prefix literal.
+  const selectedPrefix =
+    quoted.find((value) => value.includes(":")) ?? quoted[quoted.length - 1];
+  const escapedPrefix = escapeRegexLiteral(selectedPrefix);
 
   return [
     `  // ADR_CONSTRAINT: ${constraint}`,
     `  // ADR_MAPPING_RULE: ${ruleId}`,
-    `  it('should not encode values with the prohibited prefix "${firstPrefix}" in source literals', () => {`,
+    `  it('should not encode values with the prohibited prefix "${selectedPrefix}" in source literals', () => {`,
     `    const tsFiles = walkTsFiles("src");`,
     `    const forbiddenPattern = new RegExp("[\\\"']${escapedPrefix.replace(/\\/g, "\\\\")}[^\\\"'\\\\n]*[\\\"']");`,
     "",
