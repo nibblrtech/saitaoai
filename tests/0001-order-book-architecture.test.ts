@@ -109,6 +109,71 @@ describe("ADR-0001: Order Book Architecture – Compliance Constraints", () => {
       .check();
   });
 
+  it("order book domain mutation API should only be imported by the matching engine", () => {
+    modules(p)
+      .that()
+      .resideInFolder("**/src/**")
+      .notImportFrom("**/src/matching-engine/**", "**/src/order-book/**")
+      .should()
+      .notImportFrom("**/src/order-book/domain/**")
+      .rule({
+        id: "order-book/mutation-api-restricted-to-matching-engine",
+        because:
+          "The order book component shall expose its state mutation API only to the matching engine and shall not accept direct mutations from transport adapters",
+        suggestion:
+          "Route state changes through the matching engine instead of importing order book domain classes directly",
+      })
+      .check();
+  });
+
+  it("order book domain and application layers should not import network or blocking RPC packages", () => {
+    modules(p)
+      .that()
+      .resideInFolder("**/src/order-book/domain/**", "**/src/order-book/application/**")
+      .should()
+      .notImportFrom("http", "https", "net", "dgram", "tls", "axios", "node-fetch", "undici", "ws")
+      .rule({
+        id: "order-book/no-network-calls-on-mutation-path",
+        because:
+          "The order book component shall not execute network calls or blocking remote procedure calls on the mutation path",
+        suggestion:
+          "Move network I/O behind an adapter invoked outside the synchronous mutation path, and publish domain events instead",
+      })
+      .check();
+  });
+
+  it("domain Event classes should carry a sequence number for total ordering", () => {
+    classes(p)
+      .that()
+      .haveNameEndingWith("Event")
+      .resideInFolder("**/src/order-book/domain/**")
+      .should()
+      .shouldHavePropertyNamed("sequenceNumber")
+      .rule({
+        id: "order-book/events-have-sequence-number",
+        because:
+          "The order book component shall include a strictly increasing sequence number and event time on every emitted domain event",
+        suggestion: "Add a sequenceNumber property to every domain event class",
+      })
+      .check();
+  });
+
+  it("domain Event classes should carry an event time for persisted timestamps", () => {
+    classes(p)
+      .that()
+      .haveNameEndingWith("Event")
+      .resideInFolder("**/src/order-book/domain/**")
+      .should()
+      .shouldHavePropertyNamed("eventTime")
+      .rule({
+        id: "order-book/events-have-event-time",
+        because:
+          "The order book component shall include a strictly increasing sequence number and event time on every emitted domain event",
+        suggestion: "Add an eventTime property to every domain event class",
+      })
+      .check();
+  });
+
   it("order book infrastructure should not be imported from outside the order book module", () => {
     modules(p)
       .that()
