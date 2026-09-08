@@ -86,7 +86,7 @@ Chosen option: In-memory single-writer limit order book per instrument with appe
 - The order book module shall keep entity fields private and allow state mutation only through explicit domain methods.
 - The order book module shall archive daily journal batches and define a seven-year retention policy for historical events.
 - The order book component shall expose stable domain models so that matching, surveillance, and market data components can consume events without reading internal storage structures.
-- Id field should not have prefix.  E.g. "ID:".
+- Id field should have prefix.  E.g. "ID:".
 
 ## Pros and Cons of the Options
 
