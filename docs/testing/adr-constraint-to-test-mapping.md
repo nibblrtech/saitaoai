@@ -101,13 +101,13 @@ Shared library usage across repos:
       "id": "compliance-sequencing-behavior",
       "pattern": "(sequence|ordered|replay|deterministic)",
       "testType": "compliance-generated",
-      "template": "todo-constraint"
+      "template": "sequence-evidence"
     },
     {
       "id": "compliance-validation-and-rejection",
       "pattern": "(validate|reject|invalid|unauthenticated|tradability|session state)",
       "testType": "compliance-generated",
-      "template": "todo-constraint"
+      "template": "validation-evidence"
     },
     {
       "id": "compliance-quantity-and-lifecycle-invariants",

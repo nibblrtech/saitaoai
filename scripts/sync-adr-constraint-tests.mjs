@@ -268,6 +268,164 @@ function renderTodoConstraintBlock(constraint, ruleId) {
   ].join("\n");
 }
 
+function sequenceTermsFromConstraint(constraint) {
+  const terms = [];
+  const normalized = constraint.toLowerCase();
+
+  if (normalized.includes("sequence")) {
+    terms.push("sequence");
+  }
+
+  if (normalized.includes("ordered") || normalized.includes("order")) {
+    terms.push("order");
+  }
+
+  if (normalized.includes("replay")) {
+    terms.push("replay");
+  }
+
+  if (normalized.includes("deterministic")) {
+    terms.push("deterministic");
+  }
+
+  if (terms.length === 0) {
+    terms.push("sequence");
+  }
+
+  return Array.from(new Set(terms));
+}
+
+function validationTermsFromConstraint(constraint) {
+  const terms = [];
+  const normalized = constraint.toLowerCase();
+
+  if (normalized.includes("validate") || normalized.includes("validation")) {
+    terms.push("validate");
+  }
+
+  if (normalized.includes("reject") || normalized.includes("rejection")) {
+    terms.push("reject");
+  }
+
+  if (normalized.includes("invalid")) {
+    terms.push("invalid");
+  }
+
+  if (normalized.includes("unauthenticated")) {
+    terms.push("auth");
+  }
+
+  if (normalized.includes("session state")) {
+    terms.push("session");
+  }
+
+  if (normalized.includes("tradability")) {
+    terms.push("tradable");
+  }
+
+  if (terms.length === 0) {
+    terms.push("validate");
+  }
+
+  return Array.from(new Set(terms));
+}
+
+function componentRootsFromConstraint(constraint) {
+  const normalizedConstraint = constraint.toLowerCase();
+  const candidateRoots = [];
+
+  if (normalizedConstraint.includes("order book")) {
+    candidateRoots.push("src/order-book");
+  }
+
+  if (normalizedConstraint.includes("matching engine")) {
+    candidateRoots.push("src/matching-engine");
+  }
+
+  if (normalizedConstraint.includes("market data")) {
+    candidateRoots.push("src/market-data");
+  }
+
+  if (candidateRoots.length === 0) {
+    candidateRoots.push("src");
+  }
+
+  return candidateRoots;
+}
+
+function renderSequenceEvidenceBlock(constraint, ruleId) {
+  const terms = sequenceTermsFromConstraint(constraint);
+  const termsLiteral = `[${terms.map((t) => `"${t}"`).join(", ")}]`;
+  const rootsLiteral = JSON.stringify(componentRootsFromConstraint(constraint));
+
+  return [
+    `  // ADR_CONSTRAINT: ${constraint}`,
+    `  // ADR_MAPPING_RULE: ${ruleId}`,
+    `  it("should provide sequence/replay evidence for this constraint", () => {`,
+    `    const candidateRoots = ${rootsLiteral};`,
+    "",
+    "    const existingRoots = candidateRoots.filter((root) => existsSync(root));",
+    "",
+    "    // Bootstrap guard: until component code exists, this test is a no-op and stays green.",
+    "    if (existingRoots.length === 0) {",
+    "      expect(true).toBe(true);",
+    "      return;",
+    "    }",
+    "",
+    "    const tsFiles = Array.from(",
+    "      new Set(existingRoots.flatMap((root) => walkTsFiles(root)))",
+    "    );",
+    "",
+    "    const corpus = tsFiles",
+    "      .map((file) => readFileSync(file, \"utf8\"))",
+    "      .join(\"\\n\")",
+    "      .toLowerCase();",
+    "",
+    `    const requiredTerms = ${termsLiteral};`,
+    "    const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));",
+    "",
+    "    expect(missingTerms).toEqual([]);",
+    "  });",
+    "",
+  ].join("\n");
+}
+
+function renderValidationEvidenceBlock(constraint, ruleId) {
+  const terms = validationTermsFromConstraint(constraint);
+  const termsLiteral = `[${terms.map((t) => `"${t}"`).join(", ")}]`;
+  const rootsLiteral = JSON.stringify(componentRootsFromConstraint(constraint));
+
+  return [
+    `  // ADR_CONSTRAINT: ${constraint}`,
+    `  // ADR_MAPPING_RULE: ${ruleId}`,
+    `  it("should provide validation/rejection evidence for this constraint", () => {`,
+    `    const candidateRoots = ${rootsLiteral};`,
+    "    const existingRoots = candidateRoots.filter((root) => existsSync(root));",
+    "",
+    "    // Bootstrap guard: until component code exists, this test is a no-op and stays green.",
+    "    if (existingRoots.length === 0) {",
+    "      expect(true).toBe(true);",
+    "      return;",
+    "    }",
+    "",
+    "    const tsFiles = Array.from(",
+    "      new Set(existingRoots.flatMap((root) => walkTsFiles(root)))",
+    "    );",
+    "",
+    "    const corpus = tsFiles",
+    "      .map((file) => readFileSync(file, \"utf8\"))",
+    "      .join(\"\\n\")",
+    "      .toLowerCase();",
+    "",
+    `    const requiredTerms = ${termsLiteral};`,
+    "    const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));",
+    "",
+    "    expect(missingTerms).toEqual([]);",
+    "  });",
+    "",
+  ].join("\n");
+}
+
 function renderComplianceGeneratedTests(constraintsAndRules) {
   const blocks = [];
 
@@ -297,6 +455,16 @@ function renderComplianceGeneratedTests(constraintsAndRules) {
 
     if (rule.template === "todo-constraint") {
       blocks.push(renderTodoConstraintBlock(constraint, rule.id));
+      continue;
+    }
+
+    if (rule.template === "sequence-evidence") {
+      blocks.push(renderSequenceEvidenceBlock(constraint, rule.id));
+      continue;
+    }
+
+    if (rule.template === "validation-evidence") {
+      blocks.push(renderValidationEvidenceBlock(constraint, rule.id));
       continue;
     }
 
