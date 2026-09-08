@@ -46,6 +46,7 @@ describe("ADR-0002: Matching Engine Architecture – Compliance Constraints", ()
       .check();
   });
 
+  // ADR_CONSTRAINT: The matching engine component shall not call market data publisher APIs directly from matching logic and shall publish only domain events to an internal event bus.
   it("matching engine should not call market data publisher APIs directly from matching logic", () => {
     modules(p)
       .that()
@@ -130,6 +131,7 @@ describe("ADR-0002: Matching Engine Architecture – Compliance Constraints", ()
       .check();
   });
 
+  // ADR_CONSTRAINT: The matching engine module shall not inherit domain service classes from infrastructure base classes.
   it("matching engine domain service files should not import from infrastructure layer", () => {
     modules(p)
       .that()
