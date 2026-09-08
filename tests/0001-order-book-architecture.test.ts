@@ -4,6 +4,7 @@ import { modules, classes, project } from "@nielspeter/ts-archunit";
 const p = project("tsconfig.json");
 
 describe("ADR-0001: Order Book Architecture – Compliance Constraints", () => {
+  // ADR_CONSTRAINT: The order book component shall read and write persistence only through an order-book repository interface owned by the order-book module.
   it("order book domain layer should not import infrastructure layer directly", () => {
     modules(p)
       .that()
@@ -20,6 +21,7 @@ describe("ADR-0001: Order Book Architecture – Compliance Constraints", () => {
       .check();
   });
 
+  // ADR_CONSTRAINT: The order book component shall not import any transport protocol classes for FIX, OUCH, WebSocket, HTTP, TCP, or UDP.
   it("order book modules should not import transport protocol packages", () => {
     modules(p)
       .that()
@@ -44,6 +46,8 @@ describe("ADR-0001: Order Book Architecture – Compliance Constraints", () => {
       .check();
   });
 
+  // ADR_CONSTRAINT: The order book component shall not be called directly by market data adapters and shall communicate outbound state changes only through domain events.
+  // ADR_CONSTRAINT: The order book component shall expose its state mutation API only to the matching engine and shall not accept direct mutations from transport adapters.
   it("order book should not be imported directly by market data modules", () => {
     modules(p)
       .that()
@@ -60,6 +64,7 @@ describe("ADR-0001: Order Book Architecture – Compliance Constraints", () => {
       .check();
   });
 
+  // ADR_CONSTRAINT: The order book module shall follow naming conventions where aggregate classes end with Aggregate, domain events end with Event, and repository interfaces end with Repository.
   it("Aggregate classes should reside in the order book domain layer", () => {
     classes(p)
       .that()
@@ -76,6 +81,7 @@ describe("ADR-0001: Order Book Architecture – Compliance Constraints", () => {
       .check();
   });
 
+  // ADR_CONSTRAINT: The order book module shall follow naming conventions where aggregate classes end with Aggregate, domain events end with Event, and repository interfaces end with Repository.
   it("domain Event classes should reside in the order book domain layer", () => {
     classes(p)
       .that()
@@ -92,6 +98,8 @@ describe("ADR-0001: Order Book Architecture – Compliance Constraints", () => {
       .check();
   });
 
+  // ADR_CONSTRAINT: The order book module shall follow naming conventions where aggregate classes end with Aggregate, domain events end with Event, and repository interfaces end with Repository.
+  // ADR_CONSTRAINT: The order book module shall keep domain entities and value objects under the domain layer and shall keep persistence implementations under the infrastructure layer.
   it("Repository interfaces should reside in the order book domain layer", () => {
     classes(p)
       .that()
@@ -109,6 +117,7 @@ describe("ADR-0001: Order Book Architecture – Compliance Constraints", () => {
       .check();
   });
 
+  // ADR_CONSTRAINT: The order book component shall expose stable domain models so that matching, surveillance, and market data components can consume events without reading internal storage structures.
   it("order book infrastructure should not be imported from outside the order book module", () => {
     modules(p)
       .that()

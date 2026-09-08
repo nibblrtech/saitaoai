@@ -1,11 +1,9 @@
-name: Build ArchUnit Tests From ADR Change
+name: Maintain ADR Architecture and Compliance Tests
 
 on:
   workflow_dispatch:
   push:
     branches: ["main", "master"]
-    paths:
-      - "docs/decisions/**"
 
 jobs:
   generate-adr-tests:
@@ -33,24 +31,15 @@ jobs:
       - name: Install Copilot CLI
         run: npm install -g @github/copilot
 
-      - name: Detect changed ADR files
+      - name: Collect ADR files
         id: changed_adrs
         shell: bash
         run: |
           set -euo pipefail
 
-          BEFORE_SHA="${{ github.event.before }}"
-          AFTER_SHA="${{ github.sha }}"
-
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            mapfile -t ADR_FILES < <(git ls-files 'docs/decisions/*.md')
-          else
-            if [[ -z "${BEFORE_SHA}" || "${BEFORE_SHA}" == "0000000000000000000000000000000000000000" ]]; then
-              mapfile -t ADR_FILES < <(git diff --name-only HEAD~1 "${AFTER_SHA}" -- 'docs/decisions/*.md')
-            else
-              mapfile -t ADR_FILES < <(git diff --name-only "${BEFORE_SHA}" "${AFTER_SHA}" -- 'docs/decisions/*.md')
-            fi
-          fi
+          # Always process all ADRs on every merge to main/master to keep test
+          # suites continuously synchronized with the current ADR corpus.
+          mapfile -t ADR_FILES < <(git ls-files 'docs/decisions/*.md')
 
           if [[ ${#ADR_FILES[@]} -eq 0 ]]; then
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
@@ -65,7 +54,7 @@ jobs:
 
           echo "has_changes=true" >> "$GITHUB_OUTPUT"
 
-      - name: Generate or update ArchUnit tests with Copilot
+      - name: Generate or update ADR tests with Copilot
         if: steps.changed_adrs.outputs.has_changes == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -74,6 +63,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
+          # Policy summary:
+          # 1) Every compliance constraint must have exactly one test strategy.
+          # 2) Architecture constraints belong in *.test.ts (ArchUnit style).
+          # 3) Non-ArchUnit constraints belong in *.compliance.test.ts.
+          # 4) ADR_CONSTRAINT markers must match the exact ADR bullet text.
+          # 5) Mapping + coverage verification is authoritative and can fail CI.
 
           # Ensure no stale COPILOT_GITHUB_TOKEN value can override native token auth.
           unset COPILOT_GITHUB_TOKEN || true
@@ -86,8 +82,9 @@ jobs:
 
             DECISION_NAME="$(basename "$ADR_FILE" .md)"
             TARGET_TEST_FILE="tests/${DECISION_NAME}.test.ts"
+            TARGET_COMPLIANCE_TEST_FILE="tests/${DECISION_NAME}.compliance.test.ts"
 
-            PROMPT="look at the Compliance Constraints of the checked in file ${ADR_FILE}. create or update the set of arch unit tests for that component. put the tests under the tests folder, named: ${TARGET_TEST_FILE}. keep tests in TypeScript using vitest and @nielspeter/ts-archunit patterns from this repository. preserve existing tests and only modify/create ${TARGET_TEST_FILE} for this ADR."
+            PROMPT="look at the Compliance Constraints of the checked in file ${ADR_FILE}. use docs/testing/adr-constraint-to-test-mapping.md as the authoritative routing policy. create or update architecture tests for that component in ${TARGET_TEST_FILE} using TypeScript, vitest, and @nielspeter/ts-archunit patterns from this repository. for constraints that are not representable as ts-archunit rules, create or update additional compliance tests in ${TARGET_COMPLIANCE_TEST_FILE}; use executable tests when possible, and use it.todo placeholders when deterministic executable checks are not yet available. add one line comment marker above each test in either file with this exact format: ADR_CONSTRAINT: <exact constraint text from ADR bullet>. every compliance constraint bullet must be mapped to at least one test marker in either ${TARGET_TEST_FILE} or ${TARGET_COMPLIANCE_TEST_FILE}. preserve existing tests and only modify/create these two files for this ADR."
 
             copilot -p "$PROMPT" \
               --allow-tool=write \
@@ -109,6 +106,22 @@ jobs:
               --allow-tool='shell(git:*)' \
               --no-ask-user
           done <<< "$ADR_FILES"
+
+      - name: Sync mapped non-ArchUnit compliance tests
+        if: steps.changed_adrs.outputs.has_changes == 'true'
+        env:
+          ADR_FILES: ${{ steps.changed_adrs.outputs.adr_files }}
+          # Optional org-level shared mapping library (JSON text with { rules: [...] }).
+          # If unset, scripts fall back to docs/testing/adr-constraint-to-test-mapping.md.
+          ADR_CONSTRAINT_MAPPING_JSON: ${{ vars.ADR_CONSTRAINT_MAPPING_JSON }}
+        run: node scripts/sync-adr-constraint-tests.mjs
+
+      - name: Verify ADR compliance constraint coverage
+        if: steps.changed_adrs.outputs.has_changes == 'true'
+        env:
+          ADR_FILES: ${{ steps.changed_adrs.outputs.adr_files }}
+          ADR_CONSTRAINT_MAPPING_JSON: ${{ vars.ADR_CONSTRAINT_MAPPING_JSON }}
+        run: node scripts/verify-adr-constraint-coverage.mjs
 
       - name: Run test suite
         if: steps.changed_adrs.outputs.has_changes == 'true'

@@ -4,6 +4,8 @@ import { modules, classes, project } from "@nielspeter/ts-archunit";
 const p = project("tsconfig.json");
 
 describe("ADR-0002: Matching Engine Architecture – Compliance Constraints", () => {
+  // ADR_CONSTRAINT: The matching engine component shall call the order book only through a domain-defined order book port interface.
+  // ADR_CONSTRAINT: The matching engine component shall not call order book repository implementations directly.
   it("matching engine domain layer should not import infrastructure layer directly", () => {
     modules(p)
       .that()
@@ -20,6 +22,7 @@ describe("ADR-0002: Matching Engine Architecture – Compliance Constraints", ()
       .check();
   });
 
+  // ADR_CONSTRAINT: The matching engine component shall not import client protocol codecs for FIX, OUCH, WebSocket, REST, or persistence frameworks in core matching classes.
   it("matching engine core classes should not import transport protocol packages", () => {
     modules(p)
       .that()
@@ -59,6 +62,7 @@ describe("ADR-0002: Matching Engine Architecture – Compliance Constraints", ()
       .check();
   });
 
+  // ADR_CONSTRAINT: The matching engine component shall not call clearing, settlement, or reporting adapters synchronously on the matching path.
   it("matching engine application layer should not import from market data or clearing adapters", () => {
     modules(p)
       .that()
@@ -75,6 +79,7 @@ describe("ADR-0002: Matching Engine Architecture – Compliance Constraints", ()
       .check();
   });
 
+  // ADR_CONSTRAINT: The matching engine module shall follow naming conventions where command classes end with Command, use-case handlers end with Handler, and emitted event classes end with Event.
   it("Command classes should reside in the matching engine application layer", () => {
     classes(p)
       .that()
@@ -91,6 +96,7 @@ describe("ADR-0002: Matching Engine Architecture – Compliance Constraints", ()
       .check();
   });
 
+  // ADR_CONSTRAINT: The matching engine module shall follow naming conventions where command classes end with Command, use-case handlers end with Handler, and emitted event classes end with Event.
   it("Handler classes should reside in the matching engine application layer", () => {
     classes(p)
       .that()
@@ -107,6 +113,7 @@ describe("ADR-0002: Matching Engine Architecture – Compliance Constraints", ()
       .check();
   });
 
+  // ADR_CONSTRAINT: The matching engine module shall follow naming conventions where command classes end with Command, use-case handlers end with Handler, and emitted event classes end with Event.
   it("domain Event classes should reside in the matching engine domain layer", () => {
     classes(p)
       .that()
