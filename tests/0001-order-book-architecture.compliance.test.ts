@@ -743,7 +743,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
 
     expect(missingTerms).toEqual([]);
   });
-  // ADR_CONSTRAINT: Fields whose name starts with "id" should have prefix: "ID:".
+  // ADR_CONSTRAINT: Fields whose name starts with "id" should not have prefix: "ID:".
   // ADR_MAPPING_RULE: compliance-catch-all-bootstrap
   it("should provide implementation evidence for this constraint", () => {
     const candidateRoots = ["src"];
