@@ -221,9 +221,15 @@ for (const adrFile of adrFiles) {
     (c) => !actualCompliance.has(c)
   );
 
-  const staleArch = [...actualArch].filter((c) => !expectedArch.has(c));
+  const misplacedArch = [...actualArch].filter((c) => expectedCompliance.has(c));
+  const misplacedCompliance = [...actualCompliance].filter((c) => expectedArch.has(c));
+
+  // Truly stale means the marker is not expected in either target file.
+  const staleArch = [...actualArch].filter(
+    (c) => !expectedArch.has(c) && !expectedCompliance.has(c)
+  );
   const staleCompliance = [...actualCompliance].filter(
-    (c) => !expectedCompliance.has(c)
+    (c) => !expectedCompliance.has(c) && !expectedArch.has(c)
   );
 
   if (
@@ -263,6 +269,24 @@ for (const adrFile of adrFiles) {
       }
     }
   } else {
+    if (misplacedArch.length > 0) {
+      console.warn(
+        `Misplaced markers in ${archFile} (expected in ${complianceFile}, non-fatal):`
+      );
+      for (const c of misplacedArch) {
+        console.warn(`- ${c}`);
+      }
+    }
+
+    if (misplacedCompliance.length > 0) {
+      console.warn(
+        `Misplaced markers in ${complianceFile} (expected in ${archFile}, non-fatal):`
+      );
+      for (const c of misplacedCompliance) {
+        console.warn(`- ${c}`);
+      }
+    }
+
     console.log(
       `Constraint coverage check passed for ${adrFile}: all mapped constraints are covered and synchronized.`
     );

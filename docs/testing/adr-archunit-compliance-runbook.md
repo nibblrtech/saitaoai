@@ -25,9 +25,10 @@ Pipeline stages:
 1. Collect ADR files from docs/decisions.
 2. Ask Copilot to generate/update ADR architecture tests and companion compliance tests.
 3. Run deterministic sync for mapping-driven compliance tests.
-4. Verify constraint-to-test marker coverage.
-5. Run npm test so all tests execute in one suite.
-6. Open a PR automatically when test files changed.
+4. Run deterministic sync again immediately before verify.
+5. Verify constraint-to-test marker coverage.
+6. Run npm test so all tests execute in one suite.
+7. Open a PR automatically when test files changed.
 
 ### Inputs
 
@@ -47,6 +48,32 @@ Each rule maps a constraint to one test strategy:
    - Constraint should be represented in tests/<adr-name>.test.ts
 2. compliance-generated
    - Constraint should be represented in tests/<adr-name>.compliance.test.ts
+
+### How compliance tests are defined
+
+Compliance tests are generated from mapping rules and templates in two layers:
+
+1. Routing layer
+   - Rule set maps each ADR constraint sentence to a testType and template.
+   - Source is ADR_CONSTRAINT_MAPPING_JSON when provided.
+   - Fallback source is docs/testing/adr-constraint-to-test-mapping.md.
+
+2. Template layer
+   - Implemented in scripts/sync-adr-constraint-tests.mjs.
+   - Current templates:
+     - prefix-literal-ban
+     - inheritance-depth-cap
+     - literal-ban
+     - sequence-evidence
+     - validation-evidence
+     - quantity-lifecycle-evidence
+     - todo-constraint
+
+Template behavior notes:
+
+1. Evidence templates generate executable tests using source scanning and assertion checks.
+2. Evidence templates include a bootstrap guard and pass as no-op if component source folders do not yet exist.
+3. todo-constraint creates explicit it.todo entries for constraints not yet upgraded to executable templates.
 
 ### Marker contract
 
@@ -73,8 +100,17 @@ These markers are used by coverage verification.
    - Rebuilds expected mapped coverage from ADR + mapping rules.
    - Verifies mapped constraints have matching markers in target test files.
    - Verifies stale markers are removed after ADR or mapping changes.
+   - Treats misplaced duplicate markers across arch/compliance files as warnings when coverage is otherwise complete.
    - Logs unmapped constraints without failing for unmappability.
    - Fails on mapped coverage drift (missing or stale mapped markers).
+
+### Why TODO entries appear in CI
+
+TODO entries are generated tests in placeholder state.
+
+1. They come from constraints routed to todo-constraint.
+2. They are visible and counted by Vitest.
+3. They do not enforce behavior until the corresponding rule is moved to an executable template.
 
 ### Execution model
 
@@ -95,6 +131,26 @@ Why:
 
 1. Shared logic avoids duplicated per-repo mapping drift.
 2. Repositories can still extend locally when needed.
+
+### Portability model
+
+This system is portable across repositories and folders with three patterns:
+
+1. Best default: organization Actions variable
+   - Set ADR_CONSTRAINT_MAPPING_JSON once at org scope.
+   - Every repo workflow reads the same mapping JSON automatically.
+   - No cross-repository file reads required.
+
+2. Reusable workflow pattern
+   - Host a reusable workflow in a central repository.
+   - Consumer repositories call it with workflow_call.
+   - Good for standardizing job logic across many repos.
+
+3. Shared file checkout pattern
+   - A workflow checks out a central repository path and reads mapping files from there.
+   - Use only when variable-based sharing is insufficient.
+
+Recommended choice for most teams: pattern 1, with local fallback file retained for emergency override.
 
 ### Prerequisites
 
@@ -127,13 +183,31 @@ Why:
    - copilot-requests: write
    - Repository or org secret PERSONAL_ACCESS_TOKEN for create-pull-request step
 
-5. Merge workflow into main/master.
+5. Optional but recommended:
+   - Add org Actions variable ADR_CONSTRAINT_MAPPING_JSON with the shared rule library.
+   - Keep per-repo docs/testing/adr-constraint-to-test-mapping.md as fallback and for local extension.
 
-6. Validate first run:
+6. Merge workflow into main/master.
+
+7. Validate first run:
    - Confirm mapping summary logs appear for each ADR.
    - Confirm generated compliance test files are created or updated.
    - Confirm coverage verification reports mapped coverage status.
    - Confirm npm test runs all suites.
+
+### GitHub runner permissions by portability pattern
+
+1. Organization variable pattern (ADR_CONSTRAINT_MAPPING_JSON)
+   - No extra permissions beyond current workflow requirements.
+   - Works with default checkout permissions already in this project.
+
+2. Reusable workflow pattern
+   - No additional repository content permission if using only caller repository files.
+   - If reusable workflow accesses other private repos, provide appropriate token and read access.
+
+3. Shared file checkout pattern
+   - Requires token with read access to the central repository.
+   - Usually implemented with an additional checkout step using a PAT or GitHub App token.
 
 ### Shared mapping JSON template
 
@@ -175,7 +249,7 @@ Use this loop continuously:
 1. Add or update ADR constraints.
 2. Run workflow.
 3. Review mapping summary logs.
-4. Promote frequent unmapped or todo constraint shapes into deterministic templates.
+4. Promote frequent todo constraint shapes into deterministic executable templates.
 5. Keep reducing catch-all usage over time.
 
 ### Mapping maturity model
@@ -189,7 +263,7 @@ Use this loop continuously:
    - Convert todos into executable assertions where feasible.
 
 3. Steady-state phase
-   - Unmapped constraints become rare.
+   - Unmapped constraints are rare and typically indicate new policy language.
    - Most constraints map to deterministic executable checks.
 
 ### Change management rules
@@ -209,6 +283,17 @@ ADR_FILES="$(printf '%s\n' docs/decisions/*.md)" node scripts/sync-adr-constrain
 ADR_FILES="$(printf '%s\n' docs/decisions/*.md)" node scripts/verify-adr-constraint-coverage.mjs
 npm test
 ```
+
+### Converting TODO placeholders into full tests
+
+Use this repeatable process:
+
+1. Pick the rule bucket with highest todo volume.
+2. Add an executable template in scripts/sync-adr-constraint-tests.mjs.
+3. Update that rule's template in docs/testing/adr-constraint-to-test-mapping.md.
+4. Regenerate with sync script.
+5. Verify marker coverage.
+6. Run npm test and confirm todo count drops.
 
 ### Operational signals to monitor
 
@@ -235,6 +320,16 @@ These metrics indicate where mapping-library investment is needed.
 
 4. PR not created by workflow
    - Ensure PERSONAL_ACCESS_TOKEN is present and has repo scope needed by create-pull-request action.
+
+5. Unexpected stale marker errors
+   - Verify whether a constraint was remapped from archunit to compliance-generated or vice versa.
+   - Run sync twice and then verify (the workflow does this by design).
+   - Remove manual ADR_CONSTRAINT markers that no longer align with current rule routing.
+
+6. Misplaced marker warnings
+   - These are non-fatal when the expected marker exists in the correct file.
+   - They usually come from manual marker edits or intermediate generator output.
+   - You can clean them up, but they do not block CI unless coverage is missing or truly stale.
 
 ## Recommended Policy
 
