@@ -129,6 +129,19 @@ jobs:
           ADR_CONSTRAINT_MAPPING_JSON: ${{ vars.ADR_CONSTRAINT_MAPPING_JSON }}
         run: node scripts/sync-adr-constraint-tests.mjs
 
+      - name: Enforce committed ADR-derived tests on pull requests
+        if: github.event_name == 'pull_request' && steps.changed_adrs.outputs.has_changes == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if ! git diff --quiet -- tests; then
+            echo "ADR-derived tests are out of date with current constraints."
+            echo "Run the sync generator and commit updated tests before merging."
+            git --no-pager diff -- tests
+            exit 1
+          fi
+
       - name: Verify ADR compliance constraint coverage
         if: steps.changed_adrs.outputs.has_changes == 'true'
         env:
