@@ -5,7 +5,6 @@ name: Node.js CI
 
 on:
   push:
-    branches-ignore: [ "main", "master" ]
     paths-ignore:
       - "docs/decisions/**"
   pull_request:
@@ -14,7 +13,45 @@ on:
       - "docs/decisions/**"
 
 jobs:
+  detect-adr-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      docs_decisions_changed: ${{ steps.detect.outputs.docs_decisions_changed }}
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+
+    - name: Detect docs/decisions changes
+      id: detect
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          base_ref="origin/${{ github.base_ref }}"
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          changed_files="$(git diff --name-only "$base_ref"...HEAD)"
+        else
+          before_sha="${{ github.event.before }}"
+
+          if [[ "$before_sha" == "0000000000000000000000000000000000000000" ]]; then
+            changed_files="$(git diff-tree --no-commit-id --name-only -r HEAD)"
+          else
+            changed_files="$(git diff --name-only "$before_sha" HEAD)"
+          fi
+        fi
+
+        if printf '%s\n' "$changed_files" | grep -q '^docs/decisions/'; then
+          echo "docs_decisions_changed=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "docs_decisions_changed=false" >> "$GITHUB_OUTPUT"
+        fi
+
   build:
+    needs: detect-adr-changes
+    if: needs.detect-adr-changes.outputs.docs_decisions_changed != 'true'
 
     runs-on: ubuntu-latest
 
