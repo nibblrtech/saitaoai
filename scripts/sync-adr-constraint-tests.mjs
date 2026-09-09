@@ -170,6 +170,26 @@ function renderPrefixLiteralBlock(constraint, ruleId) {
   ].join("\n");
 }
 
+function renderIdPrefixBanBlock(constraint, ruleId) {
+  return [
+    `  // ADR_CONSTRAINT: ${constraint}`,
+    `  // ADR_MAPPING_RULE: ${ruleId}`,
+    '  it("should not prefix id field values with literal text", () => {',
+    '    const tsFiles = walkTsFiles("src");',
+    '    const literalPrefixConcat = /\\bid[A-Za-z0-9_]*\\s*:\\s*(?:"[^"\\n]+"|\'[^\'\\n]+\')\\s*\\+\\s*[A-Za-z_$][\\w$]*/i;',
+    '    const templatePrefix = /\\bid[A-Za-z0-9_]*\\s*:\\s*`[^`\\n$]*[^`\\n$\\s][^`\\n$]*\\$\\{\\s*[A-Za-z_$][\\w$]*\\s*\\}[^`\\n]*`/i;',
+    '',
+    '    const offenders = tsFiles.filter((file) => {',
+    '      const content = readFileSync(file, "utf8");',
+    '      return literalPrefixConcat.test(content) || templatePrefix.test(content);',
+    '    });',
+    '',
+    '    expect(offenders).toEqual([]);',
+    '  });',
+    '',
+  ].join("\n");
+}
+
 function renderInheritanceDepthCapBlock(constraint, ruleId, maxDepth) {
   if (!Number.isInteger(maxDepth) || maxDepth < 1) {
     throw new Error(
@@ -770,6 +790,11 @@ function renderComplianceGeneratedTests(constraintsAndRules) {
 
     if (rule.template === "prefix-literal-ban") {
       blocks.push(renderPrefixLiteralBlock(constraint, rule.id));
+      continue;
+    }
+
+    if (rule.template === "id-prefix-ban") {
+      blocks.push(renderIdPrefixBanBlock(constraint, rule.id));
       continue;
     }
 

@@ -6,6 +6,10 @@ on:
     branches: ["main", "master"]
     paths:
       - "docs/decisions/**"
+  pull_request:
+    branches: ["main", "master"]
+    paths:
+      - "docs/decisions/**"
 
 jobs:
   generate-adr-tests:
@@ -150,7 +154,7 @@ jobs:
           fi
 
       - name: Create Pull Request for generated tests
-        if: steps.changed_adrs.outputs.has_changes == 'true' && steps.detect_changes.outputs.tests_changed == 'true'
+        if: github.event_name == 'push' && steps.changed_adrs.outputs.has_changes == 'true' && steps.detect_changes.outputs.tests_changed == 'true'
         uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}

@@ -743,15 +743,17 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
 
     expect(missingTerms).toEqual([]);
   });
-  // ADR_CONSTRAINT: Fields whose name starts with "id" should not have prefix: "ID:".
-  // ADR_MAPPING_RULE: compliance-prefix-literal-ban
-  it('should not encode values with the prohibited prefix "ID:" in source literals', () => {
+  // ADR_CONSTRAINT: Fields whose name starts with "id" should not have a prefix.
+  // ADR_MAPPING_RULE: compliance-id-prefix-ban
+  it("should not prefix id field values with literal text", () => {
     const tsFiles = walkTsFiles("src");
-    const forbiddenPattern = new RegExp("[\"']ID:[^\"'\\n]*[\"']");
+    const literalPrefixConcat = /\bid[A-Za-z0-9_]*\s*:\s*(?:"[^"\n]+"|'[^'\n]+')\s*\+\s*[A-Za-z_$][\w$]*/i;
+    const templatePrefix = /\bid[A-Za-z0-9_]*\s*:\s*`[^`\n$]*[^`\n$\s][^`\n$]*\$\{\s*[A-Za-z_$][\w$]*\s*\}[^`\n]*`/i;
 
-    const offenders = tsFiles.filter((file) =>
-      forbiddenPattern.test(readFileSync(file, "utf8"))
-    );
+    const offenders = tsFiles.filter((file) => {
+      const content = readFileSync(file, "utf8");
+      return literalPrefixConcat.test(content) || templatePrefix.test(content);
+    });
 
     expect(offenders).toEqual([]);
   });

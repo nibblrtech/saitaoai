@@ -98,6 +98,12 @@ Shared library usage across repos:
       "template": "prefix-literal-ban"
     },
     {
+      "id": "compliance-id-prefix-ban",
+      "pattern": "\\bfields?\\b.*\\bstarts with\\b.*[\"']id[\"'].*\\b(should not have|cannot be|must not be)\\b.*\\bprefix(?:ed)?\\b",
+      "testType": "compliance-generated",
+      "template": "id-prefix-ban"
+    },
+    {
       "id": "compliance-sequencing-behavior",
       "pattern": "(sequence|ordered|replay|deterministic)",
       "testType": "compliance-generated",
