@@ -1,0 +1,152 @@
+[
+  {
+    "adrFile": "docs/decisions/0001-order-book-architecture.md",
+    "constraint": "The order book component shall maintain separate bid-side and ask-side structures for each instrument and shall not share mutable state across instruments--even if they want to.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0001-order-book-architecture.md",
+    "constraint": "The order book component shall enforce instrument-level isolation so that events for one instrument cannot mutate another instrument book.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0001-order-book-architecture.md",
+    "constraint": "The order book component shall use price-time priority within each side for price levels and orders at each level.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0001-order-book-architecture.md",
+    "constraint": "The order book component shall preserve original queue position for each resting order unless that order is canceled, fully filled, or replaced according to explicit replace semantics.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0001-order-book-architecture.md",
+    "constraint": "The order book component shall not allow the active continuous-trading book to remain crossed after processing a mutation event.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0001-order-book-architecture.md",
+    "constraint": "The order book component shall not execute network calls or blocking remote procedure calls on the mutation path.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0001-order-book-architecture.md",
+    "constraint": "The order book component shall read static instrument metadata from a versioned reference data snapshot that is immutable during a processing cycle.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0001-order-book-architecture.md",
+    "constraint": "The order book component shall use a monotonic in-process clock source for internal ordering diagnostics and a wall clock source for persisted event timestamps.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0001-order-book-architecture.md",
+    "constraint": "The order book component shall expose only query interfaces for derived views such as best bid, best ask, spread, and depth, and these query interfaces shall be side-effect free.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0001-order-book-architecture.md",
+    "constraint": "The order book component shall prevent duplicate order identifiers within the same trading session for a given participant and instrument.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0002-matching-engine-architecture.md",
+    "constraint": "The matching engine component shall apply a documented matching policy and shall not change policy at runtime without explicit configuration versioning.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0002-matching-engine-architecture.md",
+    "constraint": "The matching engine component shall enforce price-time priority for continuous trading.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0002-matching-engine-architecture.md",
+    "constraint": "The matching engine component shall not implement auction matching logic in v1.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0002-matching-engine-architecture.md",
+    "constraint": "The matching engine component shall persist an append-only execution and order-event journal before acknowledging final acceptance outcomes to external clients.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0002-matching-engine-architecture.md",
+    "constraint": "The matching engine component shall assign authoritative event timestamps within the engine boundary and shall not trust client-supplied timestamps for sequencing.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0002-matching-engine-architecture.md",
+    "constraint": "The matching engine component shall not call market data publisher APIs directly from matching logic and shall publish only domain events to an internal event bus.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0002-matching-engine-architecture.md",
+    "constraint": "The matching engine component shall apply configured trading-halt state from market-control inputs before accepting aggressive matches.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0002-matching-engine-architecture.md",
+    "constraint": "The matching engine component shall support backward-compatible event schema evolution through explicit versioned event contracts.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0002-matching-engine-architecture.md",
+    "constraint": "The matching engine module shall keep orchestration classes in the application layer and shall keep matching rules in pure domain services.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0002-matching-engine-architecture.md",
+    "constraint": "The matching engine module shall not inherit domain service classes from infrastructure base classes.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0003-market-data-distribution-architecture.md",
+    "constraint": "The market data distribution component shall consume only canonical domain events emitted by the matching engine and order book components.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0003-market-data-distribution-architecture.md",
+    "constraint": "The market data distribution component shall provide a snapshot mechanism that allows a client to reconstruct current state before applying incrementals.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0003-market-data-distribution-architecture.md",
+    "constraint": "The market data distribution component shall publish explicit event types for new order, modify order, cancel order, execution, trade bust, and trading status changes when applicable to the product.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0003-market-data-distribution-architecture.md",
+    "constraint": "The market data distribution component shall version all feed schemas and shall maintain compatibility policy for additive and breaking changes.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  },
+  {
+    "adrFile": "docs/decisions/0003-market-data-distribution-architecture.md",
+    "constraint": "The market data distribution component shall use adapter classes to implement transport protocols and shall prevent domain classes from importing adapter packages.",
+    "reason": "catch-all",
+    "matchedRuleId": "compliance-catch-all-bootstrap"
+  }
+]

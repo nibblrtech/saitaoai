@@ -153,9 +153,23 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GITHUB_TOKEN: ${{ github.token }}
           ADR_NEEDS_MAPPING_FILE: .tmp/adr-needs-mapping.json
+          NEEDS_COUNT: ${{ steps.detect_mapping_needs.outputs.needs_count }}
         shell: bash
         run: |
           set -euo pipefail
+
+          fingerprint() {
+            {
+              [[ -f docs/testing/adr-constraint-to-test-mapping.md ]] && shasum docs/testing/adr-constraint-to-test-mapping.md
+              [[ -f scripts/sync-adr-constraint-tests.mjs ]] && shasum scripts/sync-adr-constraint-tests.mjs
+              [[ -f scripts/check-new-constraints-needing-mapping.mjs ]] && shasum scripts/check-new-constraints-needing-mapping.mjs
+              if [[ -d tests ]]; then
+                find tests -type f -name "*.test.ts" -print0 | xargs -0 shasum
+              fi
+            } 2>/dev/null | sort | shasum | awk '{print $1}'
+          }
+
+          BEFORE_FINGERPRINT="$(fingerprint)"
 
           unset COPILOT_GITHUB_TOKEN || true
 
@@ -182,6 +196,13 @@ jobs:
             --allow-tool='shell(true:*)' \
             --allow-tool='shell(git:*)' \
             --no-ask-user
+
+          AFTER_FINGERPRINT="$(fingerprint)"
+          if [[ "${AFTER_FINGERPRINT}" == "${BEFORE_FINGERPRINT}" ]]; then
+            echo "Copilot evolution for new constraints made no mapping/template/test edits while ${NEEDS_COUNT:-unknown} constraints required dedicated mapping."
+            echo "This indicates the automation attempt was ineffective; failing fast for explicit diagnosis."
+            exit 1
+          fi
 
       - name: Enforce dedicated mapping for newly introduced constraints
         if: steps.changed_adrs.outputs.has_changes == 'true'
@@ -224,9 +245,23 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GITHUB_TOKEN: ${{ github.token }}
           ADR_NEEDS_MAPPING_FILE: .tmp/adr-needs-mapping-all.json
+          NEEDS_COUNT: ${{ steps.detect_all_mapping_needs.outputs.needs_count }}
         shell: bash
         run: |
           set -euo pipefail
+
+          fingerprint() {
+            {
+              [[ -f docs/testing/adr-constraint-to-test-mapping.md ]] && shasum docs/testing/adr-constraint-to-test-mapping.md
+              [[ -f scripts/sync-adr-constraint-tests.mjs ]] && shasum scripts/sync-adr-constraint-tests.mjs
+              [[ -f scripts/check-new-constraints-needing-mapping.mjs ]] && shasum scripts/check-new-constraints-needing-mapping.mjs
+              if [[ -d tests ]]; then
+                find tests -type f -name "*.test.ts" -print0 | xargs -0 shasum
+              fi
+            } 2>/dev/null | sort | shasum | awk '{print $1}'
+          }
+
+          BEFORE_FINGERPRINT="$(fingerprint)"
 
           unset COPILOT_GITHUB_TOKEN || true
 
@@ -254,6 +289,13 @@ jobs:
             --allow-tool='shell(git:*)' \
             --no-ask-user
 
+          AFTER_FINGERPRINT="$(fingerprint)"
+          if [[ "${AFTER_FINGERPRINT}" == "${BEFORE_FINGERPRINT}" ]]; then
+            echo "Copilot migration attempt for generic fallback constraints made no mapping/template/test edits while ${NEEDS_COUNT:-unknown} constraints still relied on fallback."
+            echo "This indicates migration automation did not produce changes; failing fast for explicit diagnosis."
+            exit 1
+          fi
+
       - name: Re-check generic fallback migration progress
         if: steps.changed_adrs.outputs.has_changes == 'true'
         env:
@@ -261,6 +303,7 @@ jobs:
           ADR_CONSTRAINT_MAPPING_JSON: ${{ vars.ADR_CONSTRAINT_MAPPING_JSON }}
           ADR_NEEDS_MAPPING_FILE: .tmp/adr-needs-mapping-all.json
           ADR_ONLY_NEW_CONSTRAINTS: "false"
+          ADR_FAIL_ON_NEEDS_MAPPING: "true"
         run: node scripts/check-new-constraints-needing-mapping.mjs
 
       - name: Sync mapped non-ArchUnit compliance tests
@@ -303,37 +346,46 @@ jobs:
         if: steps.changed_adrs.outputs.has_changes == 'true'
         run: npm test
 
-      - name: Detect test changes
+      - name: Detect automation-generated changes
         if: steps.changed_adrs.outputs.has_changes == 'true'
         id: detect_changes
         shell: bash
         run: |
           set -euo pipefail
 
-          if git diff --quiet -- tests; then
-            echo "tests_changed=false" >> "$GITHUB_OUTPUT"
+          if git diff --quiet -- \
+            tests \
+            docs/testing/adr-constraint-to-test-mapping.md \
+            scripts/sync-adr-constraint-tests.mjs \
+            scripts/check-new-constraints-needing-mapping.mjs; then
+            echo "automation_changed=false" >> "$GITHUB_OUTPUT"
           else
-            echo "tests_changed=true" >> "$GITHUB_OUTPUT"
+            echo "automation_changed=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Create Pull Request for generated tests
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && steps.changed_adrs.outputs.has_changes == 'true' && steps.detect_changes.outputs.tests_changed == 'true'
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && steps.changed_adrs.outputs.has_changes == 'true' && steps.detect_changes.outputs.automation_changed == 'true'
         uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          commit-message: "test: generate ArchUnit tests from ADR compliance constraints"
+          commit-message: "test: evolve ADR mappings/templates and generated tests"
           branch: "copilot/adr-archunit-tests-${{ github.run_id }}"
-          title: "test: update ArchUnit tests from ADR changes"
+          title: "test: evolve ADR mappings/templates and tests from ADR changes"
           body: |
             This PR was generated automatically from ADR changes under docs/decisions.
 
             Generated updates:
+            - Evolved ADR constraint mapping and/or compliance templates when needed.
             - Created or updated one test file per changed ADR in tests/.
             - Validated tests via npm test.
 
             Review focus:
             - Coverage of Compliance Constraints section
             - Alignment with existing architecture boundaries
+            - Dedicated mapping/template migration away from generic fallback
           add-paths: |
             tests/*.test.ts
             :(glob)tests/**/*.test.ts
+            docs/testing/adr-constraint-to-test-mapping.md
+            scripts/sync-adr-constraint-tests.mjs
+            scripts/check-new-constraints-needing-mapping.mjs

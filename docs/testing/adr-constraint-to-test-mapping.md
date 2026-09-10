@@ -110,6 +110,12 @@ Shared library usage across repos:
       "template": "domain-file-uppercase"
     },
     {
+      "id": "compliance-domain-entity-created-at",
+      "pattern": "domain\\s+entities?\\s+(?:must|shall|should)\\s+have\\s+a\\s+createdat\\s+attribute",
+      "testType": "compliance-generated",
+      "template": "domain-entity-created-at"
+    },
+    {
       "id": "compliance-sequencing-behavior",
       "pattern": "(sequence|ordered|replay|deterministic)",
       "testType": "compliance-generated",

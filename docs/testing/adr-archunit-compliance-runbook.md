@@ -284,10 +284,12 @@ node scripts/check-new-constraints-needing-mapping.mjs
 2. On pull_request, if sync changed tests but commit did not include those updates, CI fails with a clear message.
 3. This prevents merging ADR changes with stale generated test files.
 4. New-constraint mapping evolution runs before sync and attempts to produce dedicated mappings/templates automatically.
-5. If newly introduced constraints still need dedicated mapping after evolution, CI fails.
-6. Workflow also attempts migration for all constraints currently mapped to catch-all/generic fallback (best effort, non-blocking).
-7. If a constraint matches only the catch-all rule, the workflow surfaces it as a constraint that needs dedicated test mapping.
-8. Optional strict mode: set ADR_FAIL_ON_BOOTSTRAP_MAPPING=true to fail CI whenever any in-scope constraint still relies on the catch-all rule.
+5. If evolution is triggered but produces zero mapping/template/test edits, CI fails immediately with an explicit automation-did-not-edit diagnostic.
+6. If newly introduced constraints still need dedicated mapping after evolution, CI fails.
+7. Workflow also attempts migration for all constraints currently mapped to catch-all/generic fallback.
+8. If the global migration attempt produces zero edits while fallback needs exist, CI fails immediately with an explicit diagnostic.
+9. If a constraint matches only the catch-all rule, the workflow surfaces it as a constraint that needs dedicated test mapping.
+10. Optional strict mode: set ADR_FAIL_ON_BOOTSTRAP_MAPPING=true to fail CI whenever any in-scope constraint still relies on the catch-all rule.
 
 ## 7) Organization Portability
 
@@ -353,7 +355,11 @@ Preferred:
    - Meaning: workflow attempted migration for catch-all-mapped constraints, but some remain.
    - Action: inspect .tmp/adr-needs-mapping-all.json and iteratively add precise rules/templates.
 
-7. PR fails with "ADR-derived tests are out of date"
+7. Evolution step made no edits
+   - Meaning: unresolved mapping needs existed, but Copilot evolution produced no mapping/template/test file changes.
+   - Action: inspect workflow logs for Copilot auth/tooling errors and prompt constraints; rerun after confirming token scope and writable file allow-list.
+
+8. PR fails with "ADR-derived tests are out of date"
    - Meaning: CI sync produced diffs under tests.
    - Action: run sync locally and include generated test diffs in commit.
 

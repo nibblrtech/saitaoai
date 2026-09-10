@@ -224,6 +224,33 @@ function renderDomainFileUppercaseBlock(constraint, ruleId) {
   ].join("\n");
 }
 
+function renderDomainEntityCreatedAtBlock(constraint, ruleId) {
+  return [
+    `  // ADR_CONSTRAINT: ${constraint}`,
+    `  // ADR_MAPPING_RULE: ${ruleId}`,
+    '  it("should require createdAt on domain entity definitions", () => {',
+    '    const tsFiles = walkTsFiles("src");',
+    '    const domainFiles = tsFiles.filter(',
+    '      (file) => file.includes("/domain/") || file.includes("\\\\domain\\\\")',
+    '    );',
+    '',
+    '    // Bootstrap guard: if no domain files exist yet, this check is a no-op.',
+    '    if (domainFiles.length === 0) {',
+    '      expect(true).toBe(true);',
+    '      return;',
+    '    }',
+    '',
+    '    const offenders = domainFiles.filter((file) => {',
+    '      const content = readFileSync(file, "utf8");',
+    '      return !/\\bcreatedAt\\b/.test(content);',
+    '    });',
+    '',
+    '    expect(offenders).toEqual([]);',
+    '  });',
+    '',
+  ].join("\n");
+}
+
 function renderInheritanceDepthCapBlock(constraint, ruleId, maxDepth) {
   if (!Number.isInteger(maxDepth) || maxDepth < 1) {
     throw new Error(
@@ -834,6 +861,11 @@ function renderComplianceGeneratedTests(constraintsAndRules) {
 
     if (rule.template === "domain-file-uppercase") {
       blocks.push(renderDomainFileUppercaseBlock(constraint, rule.id));
+      continue;
+    }
+
+    if (rule.template === "domain-entity-created-at") {
+      blocks.push(renderDomainEntityCreatedAtBlock(constraint, rule.id));
       continue;
     }
 
