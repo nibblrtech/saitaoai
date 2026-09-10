@@ -89,6 +89,7 @@ Chosen option: Price-time priority continuous matching under a single-writer eve
 - The matching engine module shall keep class inheritance depth at three levels or less.
 - The matching engine module shall archive daily journal batches and define a seven-year retention policy for execution and lifecycle events.
 - The matching engine deployment shall target a single region for v1 and shall avoid active-active write topology.
+- domain entity files should be upper case.
 
 ## Pros and Cons of the Options
 
