@@ -6,6 +6,7 @@ const p = project("tsconfig.json");
 describe("ADR-0002: Matching Engine Architecture – Compliance Constraints", () => {
   // ADR_CONSTRAINT: The matching engine component shall call the order book only through a domain-defined order book port interface.
   // ADR_CONSTRAINT: The matching engine component shall not call order book repository implementations directly.
+  // ADR_CONSTRAINT: The matching engine module shall keep orchestration classes in the application layer and shall keep matching rules in pure domain services.
   it("matching engine domain layer should not import infrastructure layer directly", () => {
     modules(p)
       .that()
@@ -46,6 +47,7 @@ describe("ADR-0002: Matching Engine Architecture – Compliance Constraints", ()
       .check();
   });
 
+  // ADR_CONSTRAINT: The matching engine component shall not call market data publisher APIs directly from matching logic and shall publish only domain events to an internal event bus.
   it("matching engine should not call market data publisher APIs directly from matching logic", () => {
     modules(p)
       .that()
@@ -130,6 +132,7 @@ describe("ADR-0002: Matching Engine Architecture – Compliance Constraints", ()
       .check();
   });
 
+  // ADR_CONSTRAINT: The matching engine module shall not inherit domain service classes from infrastructure base classes.
   it("matching engine domain service files should not import from infrastructure layer", () => {
     modules(p)
       .that()
@@ -142,6 +145,23 @@ describe("ADR-0002: Matching Engine Architecture – Compliance Constraints", ()
           "The matching engine module shall not inherit domain service classes from infrastructure base classes",
         suggestion:
           "Use composition and dependency injection instead of inheriting from infrastructure base classes",
+      })
+      .check();
+  });
+
+  // ADR_CONSTRAINT: The matching engine component shall not implement auction matching logic in v1.
+  it("matching engine should not contain auction matching classes in v1", () => {
+    classes(p)
+      .that()
+      .resideInFolder("**/src/matching-engine/**")
+      .haveNameMatching(/Auction/i)
+      .should()
+      .notExist()
+      .rule({
+        id: "matching-engine/no-auction-matching-classes",
+        because: "The matching engine component shall not implement auction matching logic in v1",
+        suggestion:
+          "Remove auction-matching classes from the matching engine module until a future ADR introduces auction support",
       })
       .check();
   });
