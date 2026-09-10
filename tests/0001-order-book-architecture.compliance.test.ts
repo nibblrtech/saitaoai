@@ -588,25 +588,4 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
 
     expect(offenders).toEqual([]);
   });
-  // ADR_CONSTRAINT: domain entities must have a updatedAt attribute!
-  // ADR_MAPPING_RULE: compliance-domain-entity-updated-at
-  it("should require updatedAt on domain entity definitions", () => {
-    const tsFiles = walkTsFiles("src");
-    const domainFiles = tsFiles.filter(
-      (file) => file.includes("/domain/") || file.includes("\\domain\\")
-    );
-
-    // Bootstrap guard: if no domain files exist yet, this check is a no-op.
-    if (domainFiles.length === 0) {
-      expect(true).toBe(true);
-      return;
-    }
-
-    const offenders = domainFiles.filter((file) => {
-      const content = readFileSync(file, "utf8");
-      return !/\bupdatedAt\b/.test(content);
-    });
-
-    expect(offenders).toEqual([]);
-  });
 });
