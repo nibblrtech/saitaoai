@@ -1,4 +1,4 @@
-import type { User } from "../domain/user";
+import type { User } from "../domain/User";
 
 export class UserRepository {
   private readonly users: User[] = [];
