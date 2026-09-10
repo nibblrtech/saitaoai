@@ -27,38 +27,6 @@ function walkTsFiles(rootDir: string): string[] {
 }
 
 describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Compliance Constraints", () => {
-  // ADR_CONSTRAINT: The market data distribution component shall consume only canonical domain events emitted by the matching engine and order book components.
-  // ADR_MAPPING_RULE: compliance-catch-all-bootstrap
-  it("should provide implementation evidence for this constraint", () => {
-    const candidateRoots = ["src/order-book","src/matching-engine","src/market-data"];
-    const existingRoots = candidateRoots.filter((root) => existsSync(root));
-
-    // Bootstrap guard: until component code exists, this test is a no-op and stays green.
-    if (existingRoots.length === 0) {
-      expect(true).toBe(true);
-      return;
-    }
-
-    const tsFiles = Array.from(
-      new Set(existingRoots.flatMap((root) => walkTsFiles(root)))
-    );
-
-    const corpus = tsFiles
-      .map((file) => readFileSync(file, "utf8"))
-      .join("\n")
-      .toLowerCase();
-
-    const requiredTerms: string[] = ["market", "data", "events"];
-
-    // If term extraction yields no terms, this stays as a bootstrap pass.
-    if (requiredTerms.length === 0) {
-      expect(true).toBe(true);
-      return;
-    }
-
-    const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
-    expect(missingTerms).toEqual([]);
-  });
   // ADR_CONSTRAINT: The market data distribution component shall assign or preserve a strictly increasing sequence number per feed channel.
   // ADR_MAPPING_RULE: compliance-sequencing-behavior
   it("should provide sequence/replay evidence for this constraint", () => {
@@ -114,8 +82,8 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
     expect(missingTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The market data distribution component shall provide a snapshot mechanism that allows a client to reconstruct current state before applying incrementals.
-  // ADR_MAPPING_RULE: compliance-catch-all-bootstrap
-  it("should provide implementation evidence for this constraint", () => {
+  // ADR_MAPPING_RULE: compliance-market-data-snapshot-reconstruction
+  it("should provide client snapshot reconstruction evidence for this constraint", () => {
     const candidateRoots = ["src/market-data"];
     const existingRoots = candidateRoots.filter((root) => existsSync(root));
 
@@ -134,15 +102,9 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms: string[] = ["market", "data", "snapshot"];
-
-    // If term extraction yields no terms, this stays as a bootstrap pass.
-    if (requiredTerms.length === 0) {
-      expect(true).toBe(true);
-      return;
-    }
-
+    const requiredTerms: string[] = ["snapshot", "incremental"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
+
     expect(missingTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The market data distribution component shall provide a gap-recovery mechanism that allows a client to request missing sequences within a configured retention window.
@@ -357,8 +319,8 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
     expect(missingTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The market data distribution component shall publish explicit event types for new order, modify order, cancel order, execution, trade bust, and trading status changes when applicable to the product.
-  // ADR_MAPPING_RULE: compliance-catch-all-bootstrap
-  it("should provide implementation evidence for this constraint", () => {
+  // ADR_MAPPING_RULE: compliance-market-data-explicit-event-types
+  it("should provide explicit market data event type evidence for this constraint", () => {
     const candidateRoots = ["src/market-data"];
     const existingRoots = candidateRoots.filter((root) => existsSync(root));
 
@@ -377,20 +339,14 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms: string[] = ["market", "data", "publish"];
-
-    // If term extraction yields no terms, this stays as a bootstrap pass.
-    if (requiredTerms.length === 0) {
-      expect(true).toBe(true);
-      return;
-    }
-
+    const requiredTerms: string[] = ["execution", "cancel", "status"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
+
     expect(missingTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The market data distribution component shall version all feed schemas and shall maintain compatibility policy for additive and breaking changes.
-  // ADR_MAPPING_RULE: compliance-catch-all-bootstrap
-  it("should provide implementation evidence for this constraint", () => {
+  // ADR_MAPPING_RULE: compliance-event-schema-versioning
+  it("should provide event/feed schema versioning evidence for this constraint", () => {
     const candidateRoots = ["src/market-data"];
     const existingRoots = candidateRoots.filter((root) => existsSync(root));
 
@@ -409,15 +365,9 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms: string[] = ["market", "data", "feed"];
-
-    // If term extraction yields no terms, this stays as a bootstrap pass.
-    if (requiredTerms.length === 0) {
-      expect(true).toBe(true);
-      return;
-    }
-
+    const requiredTerms: string[] = ["schema", "version"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
+
     expect(missingTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The market data distribution component shall keep a deterministic mapping from internal canonical events to each external feed product schema.
@@ -497,38 +447,6 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
     const requiredTerms: string[] = ["private"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
-    expect(missingTerms).toEqual([]);
-  });
-  // ADR_CONSTRAINT: The market data distribution component shall use adapter classes to implement transport protocols and shall prevent domain classes from importing adapter packages.
-  // ADR_MAPPING_RULE: compliance-catch-all-bootstrap
-  it("should provide implementation evidence for this constraint", () => {
-    const candidateRoots = ["src/market-data"];
-    const existingRoots = candidateRoots.filter((root) => existsSync(root));
-
-    // Bootstrap guard: until component code exists, this test is a no-op and stays green.
-    if (existingRoots.length === 0) {
-      expect(true).toBe(true);
-      return;
-    }
-
-    const tsFiles = Array.from(
-      new Set(existingRoots.flatMap((root) => walkTsFiles(root)))
-    );
-
-    const corpus = tsFiles
-      .map((file) => readFileSync(file, "utf8"))
-      .join("\n")
-      .toLowerCase();
-
-    const requiredTerms: string[] = ["market", "data", "prevent"];
-
-    // If term extraction yields no terms, this stays as a bootstrap pass.
-    if (requiredTerms.length === 0) {
-      expect(true).toBe(true);
-      return;
-    }
-
-    const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
     expect(missingTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The market data distribution component shall keep class naming conventions where normalizer classes end with Normalizer, sequencer classes end with Sequencer, and serializer classes end with Serializer.

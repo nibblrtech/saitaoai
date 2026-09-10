@@ -120,7 +120,6 @@ describe("ADR-0003: Market Data Distribution Architecture – Compliance Constra
   });
 
   // ADR_CONSTRAINT: The market data distribution component shall use adapter classes to implement transport protocols and shall prevent domain classes from importing adapter packages.
-  // ADR_CONSTRAINT: The market data distribution component shall use adapter classes to implement transport protocols and shall prevent domain classes from importing adapter packages.
   it("market data domain and application layers should not import transport adapter implementations", () => {
     modules(p)
       .that()
