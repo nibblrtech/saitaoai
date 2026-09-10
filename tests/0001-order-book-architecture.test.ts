@@ -1,7 +1,13 @@
 import { describe, it } from "vitest";
-import { modules, classes, project } from "@nielspeter/ts-archunit";
+import { modules, classes, types, haveNameMatching, not, project } from "@nielspeter/ts-archunit";
 
 const p = project("tsconfig.json");
+
+// Domain object kinds with their own naming convention and constraints
+// (see the "aggregates-in-domain", "events-in-domain", and
+// "repository-interfaces-in-domain" rules below) are excluded here because
+// they are not the plain "domain entities" this constraint targets.
+const NON_ENTITY_NAME_SUFFIX = /(Aggregate|Event|Repository|Query)$/;
 
 describe("ADR-0001: Order Book Architecture – Compliance Constraints", () => {
   // ADR_CONSTRAINT: The order book component shall read and write persistence only through an order-book repository interface owned by the order-book module.
@@ -181,6 +187,40 @@ describe("ADR-0001: Order Book Architecture – Compliance Constraints", () => {
           "The order book component shall expose stable domain models so that matching, surveillance, and market data components can consume events without reading internal storage structures",
         suggestion:
           "External modules must only depend on the order book domain interfaces, not the infrastructure implementations",
+      })
+      .check();
+  });
+
+  // ADR_CONSTRAINT: domain entities must have a createdAt attribute.
+  it("order book domain entity classes should have a createdAt attribute", () => {
+    classes(p)
+      .that()
+      .resideInFolder("**/src/order-book/domain/**")
+      .satisfy(not(haveNameMatching(NON_ENTITY_NAME_SUFFIX)))
+      .should()
+      .shouldHavePropertyNamed("createdAt")
+      .rule({
+        id: "order-book/domain-entity-classes-have-created-at",
+        because: "domain entities must have a createdAt attribute",
+        suggestion:
+          "Add a createdAt attribute to the domain entity class; Aggregate, Event, Repository, and Query kinds are covered by their own naming-convention rules and are excluded from this check",
+      })
+      .check();
+  });
+
+  // ADR_CONSTRAINT: domain entities must have a createdAt attribute.
+  it("order book domain entity interfaces and type aliases should have a createdAt attribute", () => {
+    types(p)
+      .that()
+      .resideInFolder("**/src/order-book/domain/**")
+      .satisfy(not(haveNameMatching(NON_ENTITY_NAME_SUFFIX)))
+      .should()
+      .havePropertyNamed("createdAt")
+      .rule({
+        id: "order-book/domain-entity-types-have-created-at",
+        because: "domain entities must have a createdAt attribute",
+        suggestion:
+          "Add a createdAt attribute to the domain entity interface/type alias; Aggregate, Event, Repository, and Query kinds are covered by their own naming-convention rules and are excluded from this check",
       })
       .check();
   });

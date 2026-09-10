@@ -1,12 +1,32 @@
 import { describe, it } from "vitest";
-import { modules, classes, project } from "@nielspeter/ts-archunit";
+import { modules, classes, project, defineCondition, createViolation, getElementName } from "@nielspeter/ts-archunit";
+import type { ClassDeclaration } from "ts-morph";
 
 const p = project("tsconfig.json");
+
+// Custom condition: classes must not extend a base class whose name indicates
+// it belongs to the infrastructure layer (used to enforce that pure domain
+// services never inherit from infrastructure base classes).
+const notExtendInfrastructureBaseClass = defineCondition<ClassDeclaration>(
+  'not extend an infrastructure base class',
+  (elements, context) =>
+    elements
+      .filter((cls) => {
+        const extendsExpression = cls.getExtends()?.getExpression().getText();
+        return extendsExpression !== undefined && /Infrastructure/i.test(extendsExpression);
+      })
+      .map((cls) =>
+        createViolation(
+          cls,
+          `${getElementName(cls)} extends an infrastructure base class`,
+          context
+        )
+      )
+);
 
 describe("ADR-0002: Matching Engine Architecture – Compliance Constraints", () => {
   // ADR_CONSTRAINT: The matching engine component shall call the order book only through a domain-defined order book port interface.
   // ADR_CONSTRAINT: The matching engine component shall not call order book repository implementations directly.
-  // ADR_CONSTRAINT: The matching engine module shall keep orchestration classes in the application layer and shall keep matching rules in pure domain services.
   it("matching engine domain layer should not import infrastructure layer directly", () => {
     modules(p)
       .that()
@@ -43,23 +63,6 @@ describe("ADR-0002: Matching Engine Architecture – Compliance Constraints", ()
           "The matching engine component shall not import client protocol codecs for FIX, OUCH, WebSocket, REST, or persistence frameworks in core matching classes",
         suggestion:
           "Keep transport protocol handling in adapter classes within the infrastructure layer",
-      })
-      .check();
-  });
-
-  // ADR_CONSTRAINT: The matching engine component shall not call market data publisher APIs directly from matching logic and shall publish only domain events to an internal event bus.
-  it("matching engine should not call market data publisher APIs directly from matching logic", () => {
-    modules(p)
-      .that()
-      .resideInFolder("**/src/matching-engine/domain/**")
-      .should()
-      .notImportFrom("**/src/market-data/**")
-      .rule({
-        id: "matching-engine/no-direct-market-data-calls",
-        because:
-          "The matching engine component shall not call market data publisher APIs directly from matching logic and shall publish only domain events to an internal event bus",
-        suggestion:
-          "Publish domain events to an event bus; let market data adapters subscribe to those events",
       })
       .check();
   });
@@ -132,36 +135,53 @@ describe("ADR-0002: Matching Engine Architecture – Compliance Constraints", ()
       .check();
   });
 
-  // ADR_CONSTRAINT: The matching engine module shall not inherit domain service classes from infrastructure base classes.
-  it("matching engine domain service files should not import from infrastructure layer", () => {
+  // ADR_CONSTRAINT: The matching engine component shall not call market data publisher APIs directly from matching logic and shall publish only domain events to an internal event bus.
+  it("matching engine domain layer should not import market data modules", () => {
     modules(p)
       .that()
       .resideInFolder("**/src/matching-engine/domain/**")
       .should()
-      .notImportFrom("**/src/matching-engine/infrastructure/**")
+      .notImportFrom("**/src/market-data/**")
+      .rule({
+        id: "matching-engine/no-direct-market-data-publisher-calls",
+        because:
+          "The matching engine component shall not call market data publisher APIs directly from matching logic and shall publish only domain events to an internal event bus",
+        suggestion:
+          "Publish domain events to the internal event bus and let market data adapters subscribe rather than importing market data modules from matching logic",
+      })
+      .check();
+  });
+
+  // ADR_CONSTRAINT: The matching engine module shall keep orchestration classes in the application layer and shall keep matching rules in pure domain services.
+  it("matching engine domain layer should not import application layer orchestration", () => {
+    modules(p)
+      .that()
+      .resideInFolder("**/src/matching-engine/domain/**")
+      .should()
+      .notImportFrom("**/src/matching-engine/application/**")
+      .rule({
+        id: "matching-engine/domain-pure-no-application-import",
+        because:
+          "The matching engine module shall keep orchestration classes in the application layer and shall keep matching rules in pure domain services",
+        suggestion:
+          "Keep orchestration (Command/Handler) classes in application/ and leave domain services free of application-layer imports",
+      })
+      .check();
+  });
+
+  // ADR_CONSTRAINT: The matching engine module shall not inherit domain service classes from infrastructure base classes.
+  it("matching engine domain service classes should not extend infrastructure base classes", () => {
+    classes(p)
+      .that()
+      .resideInFolder("**/src/matching-engine/domain/**")
+      .should()
+      .satisfy(notExtendInfrastructureBaseClass)
       .rule({
         id: "matching-engine/domain-services-no-infrastructure-inheritance",
         because:
           "The matching engine module shall not inherit domain service classes from infrastructure base classes",
         suggestion:
-          "Use composition and dependency injection instead of inheriting from infrastructure base classes",
-      })
-      .check();
-  });
-
-  // ADR_CONSTRAINT: The matching engine component shall not implement auction matching logic in v1.
-  it("matching engine should not contain auction matching classes in v1", () => {
-    classes(p)
-      .that()
-      .resideInFolder("**/src/matching-engine/**")
-      .haveNameMatching(/Auction/i)
-      .should()
-      .notExist()
-      .rule({
-        id: "matching-engine/no-auction-matching-classes",
-        because: "The matching engine component shall not implement auction matching logic in v1",
-        suggestion:
-          "Remove auction-matching classes from the matching engine module until a future ADR introduces auction support",
+          "Compose infrastructure behavior via dependency injection instead of extending an infrastructure base class",
       })
       .check();
   });

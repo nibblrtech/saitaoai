@@ -55,8 +55,8 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
     expect(missingTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The matching engine component shall apply a documented matching policy and shall not change policy at runtime without explicit configuration versioning.
-  // ADR_MAPPING_RULE: compliance-matching-policy-versioning
-  it("should provide matching policy versioning evidence for this constraint", () => {
+  // ADR_MAPPING_RULE: compliance-matching-engine-documented-policy-versioning
+  it("should provide targeted evidence for this constraint", () => {
     const candidateRoots = ["src/matching-engine"];
     const existingRoots = candidateRoots.filter((root) => existsSync(root));
 
@@ -75,14 +75,17 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms: string[] = ["policy", "version"];
+    const requiredTerms: string[] = ["matchingpolicy", "version"];
+    const forbiddenTerms: string[] = [];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
+    const presentForbiddenTerms = forbiddenTerms.filter((term) => corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
+    expect(presentForbiddenTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The matching engine component shall enforce price-time priority for continuous trading.
-  // ADR_MAPPING_RULE: compliance-price-time-priority
-  it("should provide price-time priority evidence for this constraint", () => {
+  // ADR_MAPPING_RULE: compliance-matching-engine-price-time-priority
+  it("should provide targeted evidence for this constraint", () => {
     const candidateRoots = ["src/matching-engine"];
     const existingRoots = candidateRoots.filter((root) => existsSync(root));
 
@@ -101,10 +104,42 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms: string[] = ["price", "priority", "time"];
+    const requiredTerms: string[] = ["price", "time", "priority"];
+    const forbiddenTerms: string[] = [];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
+    const presentForbiddenTerms = forbiddenTerms.filter((term) => corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
+    expect(presentForbiddenTerms).toEqual([]);
+  });
+  // ADR_CONSTRAINT: The matching engine component shall not implement auction matching logic in v1.
+  // ADR_MAPPING_RULE: compliance-matching-engine-no-auction-logic
+  it("should provide targeted evidence for this constraint", () => {
+    const candidateRoots = ["src/matching-engine"];
+    const existingRoots = candidateRoots.filter((root) => existsSync(root));
+
+    // Bootstrap guard: until component code exists, this test is a no-op and stays green.
+    if (existingRoots.length === 0) {
+      expect(true).toBe(true);
+      return;
+    }
+
+    const tsFiles = Array.from(
+      new Set(existingRoots.flatMap((root) => walkTsFiles(root)))
+    );
+
+    const corpus = tsFiles
+      .map((file) => readFileSync(file, "utf8"))
+      .join("\n")
+      .toLowerCase();
+
+    const requiredTerms: string[] = [];
+    const forbiddenTerms: string[] = ["auction"];
+    const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
+    const presentForbiddenTerms = forbiddenTerms.filter((term) => corpus.includes(term));
+
+    expect(missingTerms).toEqual([]);
+    expect(presentForbiddenTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The matching engine component shall consume only validated order-intent events from the order entry gateway and shall reject malformed or unauthenticated inputs.
   // ADR_MAPPING_RULE: compliance-validation-and-rejection
@@ -342,8 +377,8 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
     expect(missingTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The matching engine component shall persist an append-only execution and order-event journal before acknowledging final acceptance outcomes to external clients.
-  // ADR_MAPPING_RULE: compliance-journal-before-ack
-  it("should provide journal-before-acknowledgment evidence for this constraint", () => {
+  // ADR_MAPPING_RULE: compliance-matching-engine-append-only-journal-before-ack
+  it("should provide targeted evidence for this constraint", () => {
     const candidateRoots = ["src/matching-engine"];
     const existingRoots = candidateRoots.filter((root) => existsSync(root));
 
@@ -362,14 +397,17 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms: string[] = ["journal", "acknowledg"];
+    const requiredTerms: string[] = ["journal", "appendonly"];
+    const forbiddenTerms: string[] = [];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
+    const presentForbiddenTerms = forbiddenTerms.filter((term) => corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
+    expect(presentForbiddenTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The matching engine component shall assign authoritative event timestamps within the engine boundary and shall not trust client-supplied timestamps for sequencing.
-  // ADR_MAPPING_RULE: compliance-authoritative-timestamps
-  it("should provide authoritative timestamp evidence for this constraint", () => {
+  // ADR_MAPPING_RULE: compliance-matching-engine-authoritative-timestamps
+  it("should provide targeted evidence for this constraint", () => {
     const candidateRoots = ["src/matching-engine"];
     const existingRoots = candidateRoots.filter((root) => existsSync(root));
 
@@ -388,10 +426,13 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms: string[] = ["timestamp", "authoritative"];
+    const requiredTerms: string[] = ["timestamp"];
+    const forbiddenTerms: string[] = ["clienttimestamp"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
+    const presentForbiddenTerms = forbiddenTerms.filter((term) => corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
+    expect(presentForbiddenTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The matching engine component shall include operator kill-switch hooks to halt matching per instrument or per market segment.
   // ADR_MAPPING_RULE: compliance-metrics-and-operations
@@ -420,8 +461,8 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
     expect(missingTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The matching engine component shall apply configured trading-halt state from market-control inputs before accepting aggressive matches.
-  // ADR_MAPPING_RULE: compliance-trading-halt-enforcement
-  it("should provide trading halt evidence for this constraint", () => {
+  // ADR_MAPPING_RULE: compliance-matching-engine-trading-halt-before-aggressive-matches
+  it("should provide targeted evidence for this constraint", () => {
     const candidateRoots = ["src/matching-engine"];
     const existingRoots = candidateRoots.filter((root) => existsSync(root));
 
@@ -440,10 +481,13 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms: string[] = ["halt", "trading"];
+    const requiredTerms: string[] = ["tradinghalt", "marketcontrol"];
+    const forbiddenTerms: string[] = [];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
+    const presentForbiddenTerms = forbiddenTerms.filter((term) => corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
+    expect(presentForbiddenTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The matching engine component shall expose metrics for input rate, match rate, rejection rate, queue depth, and tail latency per shard.
   // ADR_MAPPING_RULE: compliance-validation-and-rejection
@@ -525,8 +569,8 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
     expect(missingTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The matching engine component shall support backward-compatible event schema evolution through explicit versioned event contracts.
-  // ADR_MAPPING_RULE: compliance-schema-versioning
-  it("should provide schema versioning evidence for this constraint", () => {
+  // ADR_MAPPING_RULE: compliance-matching-engine-backward-compatible-schema-evolution
+  it("should provide targeted evidence for this constraint", () => {
     const candidateRoots = ["src/matching-engine"];
     const existingRoots = candidateRoots.filter((root) => existsSync(root));
 
@@ -546,9 +590,12 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .toLowerCase();
 
     const requiredTerms: string[] = ["schema", "version"];
+    const forbiddenTerms: string[] = [];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
+    const presentForbiddenTerms = forbiddenTerms.filter((term) => corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
+    expect(presentForbiddenTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The matching engine module shall keep class inheritance depth at three levels or less.
   // ADR_MAPPING_RULE: compliance-inheritance-depth-cap
