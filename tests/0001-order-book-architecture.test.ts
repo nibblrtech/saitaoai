@@ -1,9 +1,44 @@
 import { describe, it } from "vitest";
-import { modules, classes, project } from "@nielspeter/ts-archunit";
+import { modules, classes, project, expression } from "@nielspeter/ts-archunit";
 
 const p = project("tsconfig.json");
 
 describe("ADR-0001: Order Book Architecture – Compliance Constraints", () => {
+  // ADR_CONSTRAINT: The order book component shall maintain separate bid-side and ask-side structures for each instrument and shall not share mutable state across instruments--even if they want to.
+  // ADR_CONSTRAINT: The order book component shall enforce instrument-level isolation so that events for one instrument cannot mutate another instrument book.
+  it("order book domain should not declare shared mutable module-level state across instrument book instances", () => {
+    modules(p)
+      .that()
+      .resideInFolder("**/src/order-book/domain/**")
+      .should()
+      .notContain(expression(/\bexport\s+(let|var)\s+\w+/))
+      .rule({
+        id: "order-book/no-shared-mutable-module-state",
+        because:
+          "The order book component shall maintain separate bid-side and ask-side structures per instrument, shall not share mutable state across instruments, and shall enforce instrument-level isolation so that events for one instrument cannot mutate another instrument's book",
+        suggestion:
+          "Keep book state encapsulated in per-instrument instance fields (for example a Map keyed by instrumentId) instead of exported module-level let/var bindings shared across instruments",
+      })
+      .check();
+  });
+
+  // ADR_CONSTRAINT: The order book component shall use a monotonic in-process clock source for internal ordering diagnostics and a wall clock source for persisted event timestamps.
+  it("order book domain should not call the system clock directly and should depend on injected clock ports", () => {
+    modules(p)
+      .that()
+      .resideInFolder("**/src/order-book/domain/**")
+      .should()
+      .notContain(expression(/\bDate\.now\(\)|new\s+Date\(\)/))
+      .rule({
+        id: "order-book/no-direct-system-clock-access",
+        because:
+          "The order book component shall use a monotonic in-process clock source for internal ordering diagnostics and a wall clock source for persisted event timestamps, so domain code must depend on injected clock ports rather than calling the system clock directly",
+        suggestion:
+          "Inject a Clock port (a monotonic clock for internal ordering diagnostics and a wall clock for persisted event timestamps) instead of calling Date.now() or new Date() directly in domain code",
+      })
+      .check();
+  });
+
   // ADR_CONSTRAINT: The order book component shall read and write persistence only through an order-book repository interface owned by the order-book module.
   it("order book domain layer should not import infrastructure layer directly", () => {
     modules(p)

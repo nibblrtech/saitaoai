@@ -251,6 +251,33 @@ function renderDomainEntityCreatedAtBlock(constraint, ruleId) {
   ].join("\n");
 }
 
+function renderDomainEntityUpdatedAtBlock(constraint, ruleId) {
+  return [
+    `  // ADR_CONSTRAINT: ${constraint}`,
+    `  // ADR_MAPPING_RULE: ${ruleId}`,
+    '  it("should require updatedAt on domain entity definitions", () => {',
+    '    const tsFiles = walkTsFiles("src");',
+    '    const domainFiles = tsFiles.filter(',
+    '      (file) => file.includes("/domain/") || file.includes("\\\\domain\\\\")',
+    '    );',
+    '',
+    '    // Bootstrap guard: if no domain files exist yet, this check is a no-op.',
+    '    if (domainFiles.length === 0) {',
+    '      expect(true).toBe(true);',
+    '      return;',
+    '    }',
+    '',
+    '    const offenders = domainFiles.filter((file) => {',
+    '      const content = readFileSync(file, "utf8");',
+    '      return !/\\bupdatedAt\\b/.test(content);',
+    '    });',
+    '',
+    '    expect(offenders).toEqual([]);',
+    '  });',
+    '',
+  ].join("\n");
+}
+
 function renderInheritanceDepthCapBlock(constraint, ruleId, maxDepth) {
   if (!Number.isInteger(maxDepth) || maxDepth < 1) {
     throw new Error(
@@ -843,6 +870,149 @@ function renderGeneralEvidenceBlock(constraint, ruleId) {
   ].join("\n");
 }
 
+function renderFixedTermsEvidenceBlock(constraint, ruleId, testTitle, terms) {
+  const termsLiteral = `[${terms.map((t) => `"${t}"`).join(", ")}]`;
+  const rootsLiteral = JSON.stringify(componentRootsFromConstraint(constraint));
+
+  return [
+    `  // ADR_CONSTRAINT: ${constraint}`,
+    `  // ADR_MAPPING_RULE: ${ruleId}`,
+    `  it("${testTitle}", () => {`,
+    `    const candidateRoots = ${rootsLiteral};`,
+    "    const existingRoots = candidateRoots.filter((root) => existsSync(root));",
+    "",
+    "    // Bootstrap guard: until component code exists, this test is a no-op and stays green.",
+    "    if (existingRoots.length === 0) {",
+    "      expect(true).toBe(true);",
+    "      return;",
+    "    }",
+    "",
+    "    const tsFiles = Array.from(",
+    "      new Set(existingRoots.flatMap((root) => walkTsFiles(root)))",
+    "    );",
+    "",
+    "    const corpus = tsFiles",
+    "      .map((file) => readFileSync(file, \"utf8\"))",
+    "      .join(\"\\n\")",
+    "      .toLowerCase();",
+    "",
+    `    const requiredTerms: string[] = ${termsLiteral};`,
+    "    const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));",
+    "",
+    "    expect(missingTerms).toEqual([]);",
+    "  });",
+    "",
+  ].join("\n");
+}
+
+function renderPriceTimePriorityEvidenceBlock(constraint, ruleId) {
+  return renderFixedTermsEvidenceBlock(
+    constraint,
+    ruleId,
+    "should provide price-time priority evidence for this constraint",
+    ["price", "time", "priority"]
+  );
+}
+
+function renderQueuePositionEvidenceBlock(constraint, ruleId) {
+  return renderFixedTermsEvidenceBlock(
+    constraint,
+    ruleId,
+    "should provide resting-order queue position preservation evidence for this constraint",
+    ["queue", "cancel", "replace"]
+  );
+}
+
+function renderBookNotCrossedEvidenceBlock(constraint, ruleId) {
+  return renderFixedTermsEvidenceBlock(
+    constraint,
+    ruleId,
+    "should provide crossed-book prevention evidence for this constraint",
+    ["crossed", "bid", "ask"]
+  );
+}
+
+function renderReferenceDataSnapshotEvidenceBlock(constraint, ruleId) {
+  return renderFixedTermsEvidenceBlock(
+    constraint,
+    ruleId,
+    "should provide versioned reference-data snapshot evidence for this constraint",
+    ["snapshot", "immutable", "version"]
+  );
+}
+
+function renderDuplicateOrderIdEvidenceBlock(constraint, ruleId) {
+  return renderFixedTermsEvidenceBlock(
+    constraint,
+    ruleId,
+    "should provide duplicate order identifier prevention evidence for this constraint",
+    ["duplicate", "identifier"]
+  );
+}
+
+function renderMatchingPolicyVersioningEvidenceBlock(constraint, ruleId) {
+  return renderFixedTermsEvidenceBlock(
+    constraint,
+    ruleId,
+    "should provide matching policy versioning evidence for this constraint",
+    ["policy", "version"]
+  );
+}
+
+function renderJournalBeforeAckEvidenceBlock(constraint, ruleId) {
+  return renderFixedTermsEvidenceBlock(
+    constraint,
+    ruleId,
+    "should provide journal-before-acknowledgement evidence for this constraint",
+    ["journal", "acknowledg"]
+  );
+}
+
+function renderAuthoritativeTimestampEvidenceBlock(constraint, ruleId) {
+  return renderFixedTermsEvidenceBlock(
+    constraint,
+    ruleId,
+    "should provide authoritative event timestamp evidence for this constraint",
+    ["timestamp", "authoritative"]
+  );
+}
+
+function renderTradingHaltEvidenceBlock(constraint, ruleId) {
+  return renderFixedTermsEvidenceBlock(
+    constraint,
+    ruleId,
+    "should provide trading-halt enforcement evidence for this constraint",
+    ["halt", "trading"]
+  );
+}
+
+function renderEventSchemaVersioningEvidenceBlock(constraint, ruleId) {
+  return renderFixedTermsEvidenceBlock(
+    constraint,
+    ruleId,
+    "should provide event/feed schema versioning evidence for this constraint",
+    ["schema", "version"]
+  );
+}
+
+function renderSnapshotReconstructionEvidenceBlock(constraint, ruleId) {
+  return renderFixedTermsEvidenceBlock(
+    constraint,
+    ruleId,
+    "should provide client snapshot reconstruction evidence for this constraint",
+    ["snapshot", "incremental"]
+  );
+}
+
+function renderExplicitEventTypesEvidenceBlock(constraint, ruleId) {
+  return renderFixedTermsEvidenceBlock(
+    constraint,
+    ruleId,
+    "should provide explicit market data event type evidence for this constraint",
+    ["execution", "cancel", "status"]
+  );
+}
+
 function renderComplianceGeneratedTests(constraintsAndRules) {
   const blocks = [];
 
@@ -866,6 +1036,11 @@ function renderComplianceGeneratedTests(constraintsAndRules) {
 
     if (rule.template === "domain-entity-created-at") {
       blocks.push(renderDomainEntityCreatedAtBlock(constraint, rule.id));
+      continue;
+    }
+
+    if (rule.template === "domain-entity-updated-at") {
+      blocks.push(renderDomainEntityUpdatedAtBlock(constraint, rule.id));
       continue;
     }
 
@@ -917,6 +1092,66 @@ function renderComplianceGeneratedTests(constraintsAndRules) {
 
     if (rule.template === "general-evidence") {
       blocks.push(renderGeneralEvidenceBlock(constraint, rule.id));
+      continue;
+    }
+
+    if (rule.template === "price-time-priority-evidence") {
+      blocks.push(renderPriceTimePriorityEvidenceBlock(constraint, rule.id));
+      continue;
+    }
+
+    if (rule.template === "queue-position-evidence") {
+      blocks.push(renderQueuePositionEvidenceBlock(constraint, rule.id));
+      continue;
+    }
+
+    if (rule.template === "book-not-crossed-evidence") {
+      blocks.push(renderBookNotCrossedEvidenceBlock(constraint, rule.id));
+      continue;
+    }
+
+    if (rule.template === "reference-data-snapshot-evidence") {
+      blocks.push(renderReferenceDataSnapshotEvidenceBlock(constraint, rule.id));
+      continue;
+    }
+
+    if (rule.template === "duplicate-order-id-evidence") {
+      blocks.push(renderDuplicateOrderIdEvidenceBlock(constraint, rule.id));
+      continue;
+    }
+
+    if (rule.template === "matching-policy-versioning-evidence") {
+      blocks.push(renderMatchingPolicyVersioningEvidenceBlock(constraint, rule.id));
+      continue;
+    }
+
+    if (rule.template === "journal-before-ack-evidence") {
+      blocks.push(renderJournalBeforeAckEvidenceBlock(constraint, rule.id));
+      continue;
+    }
+
+    if (rule.template === "authoritative-timestamp-evidence") {
+      blocks.push(renderAuthoritativeTimestampEvidenceBlock(constraint, rule.id));
+      continue;
+    }
+
+    if (rule.template === "trading-halt-evidence") {
+      blocks.push(renderTradingHaltEvidenceBlock(constraint, rule.id));
+      continue;
+    }
+
+    if (rule.template === "event-schema-versioning-evidence") {
+      blocks.push(renderEventSchemaVersioningEvidenceBlock(constraint, rule.id));
+      continue;
+    }
+
+    if (rule.template === "snapshot-reconstruction-evidence") {
+      blocks.push(renderSnapshotReconstructionEvidenceBlock(constraint, rule.id));
+      continue;
+    }
+
+    if (rule.template === "explicit-event-types-evidence") {
+      blocks.push(renderExplicitEventTypesEvidenceBlock(constraint, rule.id));
       continue;
     }
 
