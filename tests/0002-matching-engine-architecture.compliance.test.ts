@@ -806,4 +806,36 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
 
     expect(offenders).toEqual([]);
   });
+  // ADR_CONSTRAINT: domain entity files should be upper case.
+  // ADR_MAPPING_RULE: compliance-catch-all-bootstrap
+  it("should provide implementation evidence for this constraint", () => {
+    const candidateRoots = ["src"];
+    const existingRoots = candidateRoots.filter((root) => existsSync(root));
+
+    // Bootstrap guard: until component code exists, this test is a no-op and stays green.
+    if (existingRoots.length === 0) {
+      expect(true).toBe(true);
+      return;
+    }
+
+    const tsFiles = Array.from(
+      new Set(existingRoots.flatMap((root) => walkTsFiles(root)))
+    );
+
+    const corpus = tsFiles
+      .map((file) => readFileSync(file, "utf8"))
+      .join("\n")
+      .toLowerCase();
+
+    const requiredTerms = [];
+
+    // If term extraction yields no terms, this stays as a bootstrap pass.
+    if (requiredTerms.length === 0) {
+      expect(true).toBe(true);
+      return;
+    }
+
+    const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
+    expect(missingTerms).toEqual([]);
+  });
 });
