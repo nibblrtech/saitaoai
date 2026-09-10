@@ -48,7 +48,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["order", "book", "instrument"];
+    const requiredTerms: string[] = ["order", "book", "instrument"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -80,7 +80,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["order", "book", "instrument-level"];
+    const requiredTerms: string[] = ["order", "book", "instrument-level"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -113,7 +113,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["sequence", "order"];
+    const requiredTerms: string[] = ["sequence", "order"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -140,7 +140,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["sequence", "order"];
+    const requiredTerms: string[] = ["sequence", "order"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -166,7 +166,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["order", "book", "priority"];
+    const requiredTerms: string[] = ["order", "book", "priority"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -198,7 +198,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["order", "book", "queue"];
+    const requiredTerms: string[] = ["order", "book", "queue"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -230,7 +230,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["reject"];
+    const requiredTerms: string[] = ["reject"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -256,7 +256,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["validate"];
+    const requiredTerms: string[] = ["validate"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -282,7 +282,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["reject", "invalid"];
+    const requiredTerms: string[] = ["reject", "invalid"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -308,7 +308,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["order", "book", "event"];
+    const requiredTerms: string[] = ["order", "book", "event"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -340,7 +340,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["quantity", "partial", "fill", "remaining", "open"];
+    const requiredTerms: string[] = ["quantity", "partial", "fill", "remaining", "open"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -366,7 +366,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["reject"];
+    const requiredTerms: string[] = ["reject"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -393,7 +393,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["sequence", "order"];
+    const requiredTerms: string[] = ["sequence", "order"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -419,7 +419,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["order", "book"];
+    const requiredTerms: string[] = ["order", "book"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -451,7 +451,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["order", "book", "instrument"];
+    const requiredTerms: string[] = ["order", "book", "instrument"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -483,7 +483,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["order", "book", "monotonic"];
+    const requiredTerms: string[] = ["order", "book", "monotonic"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -516,7 +516,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["order", "replay", "deterministic"];
+    const requiredTerms: string[] = ["order", "replay", "deterministic"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -542,7 +542,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["lifecycle"];
+    const requiredTerms: string[] = ["lifecycle"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -568,7 +568,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["order", "book", "spread"];
+    const requiredTerms: string[] = ["order", "book", "spread"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -600,7 +600,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["order", "book", "prevent"];
+    const requiredTerms: string[] = ["order", "book", "prevent"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -632,7 +632,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["reject"];
+    const requiredTerms: string[] = ["reject"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -712,7 +712,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["private"];
+    const requiredTerms: string[] = ["private"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -738,7 +738,7 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["archive", "retention"];
+    const requiredTerms: string[] = ["archive", "retention"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);

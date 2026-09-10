@@ -48,7 +48,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["market", "data", "events"];
+    const requiredTerms: string[] = ["market", "data", "events"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -81,7 +81,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["sequence"];
+    const requiredTerms: string[] = ["sequence"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -108,7 +108,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["sequence"];
+    const requiredTerms: string[] = ["sequence"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -134,7 +134,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["market", "data", "snapshot"];
+    const requiredTerms: string[] = ["market", "data", "snapshot"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -167,7 +167,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["sequence"];
+    const requiredTerms: string[] = ["sequence"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -194,7 +194,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["sequence", "order"];
+    const requiredTerms: string[] = ["sequence", "order"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -221,7 +221,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["sequence"];
+    const requiredTerms: string[] = ["sequence"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -247,7 +247,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["latency"];
+    const requiredTerms: string[] = ["latency"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -273,7 +273,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["private"];
+    const requiredTerms: string[] = ["private"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -299,7 +299,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["entitlement"];
+    const requiredTerms: string[] = ["entitlement"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -325,7 +325,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["auth", "encrypt", "private"];
+    const requiredTerms: string[] = ["auth", "encrypt", "private"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -351,7 +351,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["pii"];
+    const requiredTerms: string[] = ["pii"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -377,7 +377,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["market", "data", "publish"];
+    const requiredTerms: string[] = ["market", "data", "publish"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -409,7 +409,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["market", "data", "feed"];
+    const requiredTerms: string[] = ["market", "data", "feed"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -442,7 +442,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["deterministic"];
+    const requiredTerms: string[] = ["deterministic"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -468,7 +468,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["private"];
+    const requiredTerms: string[] = ["private"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -494,7 +494,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["private"];
+    const requiredTerms: string[] = ["private"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -520,7 +520,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["market", "data", "prevent"];
+    const requiredTerms: string[] = ["market", "data", "prevent"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -553,7 +553,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["sequence"];
+    const requiredTerms: string[] = ["sequence"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -633,7 +633,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["metric", "latency"];
+    const requiredTerms: string[] = ["metric", "latency"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -659,7 +659,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["backpressure"];
+    const requiredTerms: string[] = ["backpressure"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -686,7 +686,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["sequence"];
+    const requiredTerms: string[] = ["sequence"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -713,7 +713,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["sequence"];
+    const requiredTerms: string[] = ["sequence"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -740,7 +740,7 @@ describe("0003-market-data-distribution-architecture: Generated Non-ArchUnit Com
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["replay", "deterministic"];
+    const requiredTerms: string[] = ["replay", "deterministic"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);

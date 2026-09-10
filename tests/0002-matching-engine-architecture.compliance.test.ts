@@ -49,7 +49,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["sequence", "order"];
+    const requiredTerms: string[] = ["sequence", "order"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -75,7 +75,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["engine"];
+    const requiredTerms: string[] = ["engine"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -107,7 +107,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["engine", "priority"];
+    const requiredTerms: string[] = ["engine", "priority"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -139,7 +139,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["engine"];
+    const requiredTerms: string[] = ["engine"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -171,7 +171,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["validate", "reject", "auth"];
+    const requiredTerms: string[] = ["validate", "reject", "auth"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -197,7 +197,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["validate", "session", "tradable"];
+    const requiredTerms: string[] = ["validate", "session", "tradable"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -223,7 +223,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["reject"];
+    const requiredTerms: string[] = ["reject"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -250,7 +250,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["sequence"];
+    const requiredTerms: string[] = ["sequence"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -276,7 +276,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["idempotent"];
+    const requiredTerms: string[] = ["idempotent"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -302,7 +302,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["quantity", "at-most-once"];
+    const requiredTerms: string[] = ["quantity", "at-most-once"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -328,7 +328,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["quantity"];
+    const requiredTerms: string[] = ["quantity"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -354,7 +354,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["quantity", "remaining", "open", "lifecycle"];
+    const requiredTerms: string[] = ["quantity", "remaining", "open", "lifecycle"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -380,7 +380,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["lifecycle"];
+    const requiredTerms: string[] = ["lifecycle"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -406,7 +406,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["engine", "order-event", "journal"];
+    const requiredTerms: string[] = ["engine", "order-event", "journal"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -438,7 +438,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["engine", "authoritative", "event"];
+    const requiredTerms: string[] = ["engine", "authoritative", "event"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -470,7 +470,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["engine", "market", "data"];
+    const requiredTerms: string[] = ["engine", "market", "data"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -502,7 +502,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["halt"];
+    const requiredTerms: string[] = ["halt"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -528,7 +528,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["engine", "state", "market-control"];
+    const requiredTerms: string[] = ["engine", "state", "market-control"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -560,7 +560,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["reject"];
+    const requiredTerms: string[] = ["reject"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -587,7 +587,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["replay", "deterministic"];
+    const requiredTerms: string[] = ["replay", "deterministic"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -613,7 +613,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["confidential"];
+    const requiredTerms: string[] = ["confidential"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -639,7 +639,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["engine", "event", "schema"];
+    const requiredTerms: string[] = ["engine", "event", "schema"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -671,7 +671,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["engine"];
+    const requiredTerms: string[] = ["engine"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -703,7 +703,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["engine"];
+    const requiredTerms: string[] = ["engine"];
 
     // If term extraction yields no terms, this stays as a bootstrap pass.
     if (requiredTerms.length === 0) {
@@ -789,7 +789,7 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms = ["lifecycle"];
+    const requiredTerms: string[] = ["lifecycle"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
 
     expect(missingTerms).toEqual([]);
@@ -805,5 +805,37 @@ describe("0002-matching-engine-architecture: Generated Non-ArchUnit Compliance C
     );
 
     expect(offenders).toEqual([]);
+  });
+  // ADR_CONSTRAINT: domain entity files should be upper case.
+  // ADR_MAPPING_RULE: compliance-catch-all-bootstrap
+  it("should provide implementation evidence for this constraint", () => {
+    const candidateRoots = ["src"];
+    const existingRoots = candidateRoots.filter((root) => existsSync(root));
+
+    // Bootstrap guard: until component code exists, this test is a no-op and stays green.
+    if (existingRoots.length === 0) {
+      expect(true).toBe(true);
+      return;
+    }
+
+    const tsFiles = Array.from(
+      new Set(existingRoots.flatMap((root) => walkTsFiles(root)))
+    );
+
+    const corpus = tsFiles
+      .map((file) => readFileSync(file, "utf8"))
+      .join("\n")
+      .toLowerCase();
+
+    const requiredTerms: string[] = [];
+
+    // If term extraction yields no terms, this stays as a bootstrap pass.
+    if (requiredTerms.length === 0) {
+      expect(true).toBe(true);
+      return;
+    }
+
+    const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
+    expect(missingTerms).toEqual([]);
   });
 });

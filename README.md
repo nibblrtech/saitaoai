@@ -1,1 +1,10 @@
-add in skills to help build out the adrs in the first place
+- eliminate the concept of stale tests.  just remove them
+- test:
+-- add new constraint merge in PR
+--- does it run on this or the next call?
+-- break a constraint
+--- ensure the constraint fails the push
+-- fix the constraint
+--- ensure the contraint passes
+-- put in a failure then remove the constraint
+--- make sure the test passes because the constraint is gone
