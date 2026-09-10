@@ -174,6 +174,8 @@ Mapping source precedence:
 
 Implemented in scripts/sync-adr-constraint-tests.mjs.
 
+Current compliance-generated template catalog: 12 templates.
+
 ### Deterministic enforcement templates
 
 1. prefix-literal-ban
@@ -192,6 +194,10 @@ Implemented in scripts/sync-adr-constraint-tests.mjs.
 
 4. literal-ban
    - Bans a configured literal (templateArgs.literal) across source corpus.
+
+5. domain-file-uppercase
+   - Enforces uppercase-leading filenames for TypeScript files under domain folders.
+   - Fails when a domain file name starts with a lowercase letter.
 
 ### Evidence templates
 
