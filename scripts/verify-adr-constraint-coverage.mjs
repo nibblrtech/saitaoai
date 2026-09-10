@@ -3,6 +3,7 @@ import { basename } from "node:path";
 
 const MAPPING_FILE = "docs/testing/adr-constraint-to-test-mapping.md";
 const MAPPING_JSON_ENV = "ADR_CONSTRAINT_MAPPING_JSON";
+const FAIL_ON_BOOTSTRAP_MAPPING_ENV = "ADR_FAIL_ON_BOOTSTRAP_MAPPING";
 
 function normalize(text) {
   return text.replace(/\s+/g, " ").trim();
@@ -103,6 +104,18 @@ function classifyConstraint(constraint, rules) {
   };
 }
 
+function isBootstrapRule(rule) {
+  return rule?.id === "compliance-catch-all-bootstrap";
+}
+
+function shouldFailOnBootstrapMapping() {
+  return /^(1|true|yes)$/i.test(process.env[FAIL_ON_BOOTSTRAP_MAPPING_ENV] ?? "");
+}
+
+function emitGitHubAnnotation(level, filePath, message) {
+  console.log(`::${level} file=${filePath}::${message.replace(/\r?\n/g, " ")}`);
+}
+
 function parseMarkers(content) {
   const pattern = /ADR_CONSTRAINT:\s*(.+)$/gm;
   const markers = [];
@@ -143,6 +156,7 @@ function summarizeMapped(classifications) {
 function logMappingSummary(adrFile, classifications) {
   const mapped = classifications.filter((c) => c.status === "mapped");
   const unmapped = classifications.filter((c) => c.status === "unmapped");
+  const bootstrapOnly = mapped.filter((c) => isBootstrapRule(c.rule));
   const summary = summarizeMapped(classifications);
 
   console.log(`Constraint mapping summary for ${adrFile}`);
@@ -168,6 +182,25 @@ function logMappingSummary(adrFile, classifications) {
     console.warn("- currently unmapped constraints:");
     for (const item of unmapped) {
       console.warn(`  - ${item.constraint}`);
+      emitGitHubAnnotation(
+        "warning",
+        adrFile,
+        `Unmapped ADR constraint: ${item.constraint}`
+      );
+    }
+  }
+
+  if (bootstrapOnly.length > 0) {
+    console.warn(
+      "- bootstrap-only constraints (matched catch-all rule; add a dedicated mapping/template):"
+    );
+    for (const item of bootstrapOnly) {
+      console.warn(`  - ${item.constraint}`);
+      emitGitHubAnnotation(
+        shouldFailOnBootstrapMapping() ? "error" : "warning",
+        adrFile,
+        `Bootstrap-only ADR constraint matched catch-all rule '${item.rule.id}': ${item.constraint}`
+      );
     }
   }
 }
@@ -198,6 +231,16 @@ for (const adrFile of adrFiles) {
   const constraints = parseComplianceConstraints(readFileSync(adrFile, "utf8"));
   const classifications = constraints.map((c) => classifyConstraint(c, rules));
   logMappingSummary(adrFile, classifications);
+
+  if (
+    shouldFailOnBootstrapMapping() &&
+    classifications.some((c) => c.status === "mapped" && isBootstrapRule(c.rule))
+  ) {
+    hasFailure = true;
+    console.error(
+      `Bootstrap-only mapping is disallowed by ${FAIL_ON_BOOTSTRAP_MAPPING_ENV} for ${adrFile}`
+    );
+  }
 
   const expectedArch = new Set(
     classifications

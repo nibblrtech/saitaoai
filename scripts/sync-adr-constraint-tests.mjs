@@ -3,6 +3,7 @@ import { basename } from "node:path";
 
 const MAPPING_FILE = "docs/testing/adr-constraint-to-test-mapping.md";
 const MAPPING_JSON_ENV = "ADR_CONSTRAINT_MAPPING_JSON";
+const FAIL_ON_BOOTSTRAP_MAPPING_ENV = "ADR_FAIL_ON_BOOTSTRAP_MAPPING";
 
 function normalize(text) {
   return text.replace(/\s+/g, " ").trim();
@@ -109,6 +110,18 @@ function classifyConstraint(constraint, rules) {
   };
 }
 
+function isBootstrapRule(rule) {
+  return rule?.id === "compliance-catch-all-bootstrap";
+}
+
+function shouldFailOnBootstrapMapping() {
+  return /^(1|true|yes)$/i.test(process.env[FAIL_ON_BOOTSTRAP_MAPPING_ENV] ?? "");
+}
+
+function emitGitHubAnnotation(level, filePath, message) {
+  console.log(`::${level} file=${filePath}::${message.replace(/\r?\n/g, " ")}`);
+}
+
 function escapeRegexLiteral(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -182,6 +195,27 @@ function renderIdPrefixBanBlock(constraint, ruleId) {
     '    const offenders = tsFiles.filter((file) => {',
     '      const content = readFileSync(file, "utf8");',
     '      return literalPrefixConcat.test(content) || templatePrefix.test(content);',
+    '    });',
+    '',
+    '    expect(offenders).toEqual([]);',
+    '  });',
+    '',
+  ].join("\n");
+}
+
+function renderDomainFileUppercaseBlock(constraint, ruleId) {
+  return [
+    `  // ADR_CONSTRAINT: ${constraint}`,
+    `  // ADR_MAPPING_RULE: ${ruleId}`,
+    '  it("should keep domain file names upper case", () => {',
+    '    const tsFiles = walkTsFiles("src");',
+    '    const domainFiles = tsFiles.filter(',
+    '      (file) => file.includes("/domain/") || file.includes("\\\\domain\\\\")',
+    '    );',
+    '',
+    '    const offenders = domainFiles.filter((file) => {',
+    '      const fileName = file.split(/[\\\\/]/).pop() ?? file;',
+    '      return /^[a-z]/.test(fileName);',
     '    });',
     '',
     '    expect(offenders).toEqual([]);',
@@ -798,6 +832,11 @@ function renderComplianceGeneratedTests(constraintsAndRules) {
       continue;
     }
 
+    if (rule.template === "domain-file-uppercase") {
+      blocks.push(renderDomainFileUppercaseBlock(constraint, rule.id));
+      continue;
+    }
+
     if (rule.template === "inheritance-depth-cap") {
       blocks.push(
         renderInheritanceDepthCapBlock(
@@ -931,6 +970,7 @@ function summarizeMapped(classifications) {
 function logClassificationSummary(adrFile, classifications) {
   const mapped = classifications.filter((c) => c.status === "mapped");
   const unmapped = classifications.filter((c) => c.status === "unmapped");
+  const bootstrapOnly = mapped.filter((c) => isBootstrapRule(c.rule));
   const summary = summarizeMapped(classifications);
 
   console.log(`Constraint mapping summary for ${adrFile}`);
@@ -956,6 +996,25 @@ function logClassificationSummary(adrFile, classifications) {
     console.warn("- unmapped constraints:");
     for (const item of unmapped) {
       console.warn(`  - ${item.constraint}`);
+      emitGitHubAnnotation(
+        "warning",
+        adrFile,
+        `Unmapped ADR constraint: ${item.constraint}`
+      );
+    }
+  }
+
+  if (bootstrapOnly.length > 0) {
+    console.warn(
+      "- bootstrap-only constraints (matched catch-all rule; add a dedicated mapping/template):"
+    );
+    for (const item of bootstrapOnly) {
+      console.warn(`  - ${item.constraint}`);
+      emitGitHubAnnotation(
+        shouldFailOnBootstrapMapping() ? "error" : "warning",
+        adrFile,
+        `Bootstrap-only ADR constraint matched catch-all rule '${item.rule.id}': ${item.constraint}`
+      );
     }
   }
 }
@@ -980,6 +1039,16 @@ for (const adrFile of adrFiles) {
   const constraints = parseComplianceConstraints(readFileSync(adrFile, "utf8"));
   const classifications = constraints.map((c) => classifyConstraint(c, rules));
   logClassificationSummary(adrFile, classifications);
+
+  if (
+    shouldFailOnBootstrapMapping() &&
+    classifications.some((c) => c.status === "mapped" && isBootstrapRule(c.rule))
+  ) {
+    console.error(
+      `Bootstrap-only mapping is disallowed by ${FAIL_ON_BOOTSTRAP_MAPPING_ENV} for ${adrFile}`
+    );
+    process.exit(1);
+  }
 
   const complianceEntries = classifications
     .filter((c) => c.status === "mapped")

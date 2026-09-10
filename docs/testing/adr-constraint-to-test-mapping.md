@@ -104,6 +104,12 @@ Shared library usage across repos:
       "template": "id-prefix-ban"
     },
     {
+      "id": "compliance-domain-file-uppercase",
+      "pattern": "(domain\\s+entity\\s+files?|domain\\s+files?)\\s+(?:should|shall|must)\\s+be\\s+upper\\s*case",
+      "testType": "compliance-generated",
+      "template": "domain-file-uppercase"
+    },
+    {
       "id": "compliance-sequencing-behavior",
       "pattern": "(sequence|ordered|replay|deterministic)",
       "testType": "compliance-generated",
