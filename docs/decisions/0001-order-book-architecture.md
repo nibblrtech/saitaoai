@@ -88,7 +88,7 @@ Chosen option: In-memory single-writer limit order book per instrument with appe
 - The order book component shall expose stable domain models so that matching, surveillance, and market data components can consume events without reading internal storage structures.
 - Fields whose name starts with "id" should not have a prefix.
 - domain entities must have a createdAt attribute.
-- domain entities must have a updatedAt attribute.
+- domain entities must have a updatedAt attribute!
 
 ## Pros and Cons of the Options
 
