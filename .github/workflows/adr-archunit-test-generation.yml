@@ -6,6 +6,7 @@ on:
     paths:
       - "docs/decisions/**"
       - "docs/testing/adr-constraint-to-test-mapping.md"
+      - "scripts/check-new-constraints-needing-mapping.mjs"
       - "scripts/sync-adr-constraint-tests.mjs"
       - "scripts/verify-adr-constraint-coverage.mjs"
       - ".github/workflows/**"
@@ -14,6 +15,7 @@ on:
     paths:
       - "docs/decisions/**"
       - "docs/testing/adr-constraint-to-test-mapping.md"
+      - "scripts/check-new-constraints-needing-mapping.mjs"
       - "scripts/sync-adr-constraint-tests.mjs"
       - "scripts/verify-adr-constraint-coverage.mjs"
       - ".github/workflows/**"
@@ -119,6 +121,147 @@ jobs:
               --allow-tool='shell(git:*)' \
               --no-ask-user
           done <<< "$ADR_FILES"
+
+      - name: Detect newly introduced constraints needing dedicated mapping
+        if: steps.changed_adrs.outputs.has_changes == 'true'
+        id: detect_mapping_needs
+        env:
+          ADR_FILES: ${{ steps.changed_adrs.outputs.adr_files }}
+          ADR_CONSTRAINT_MAPPING_JSON: ${{ vars.ADR_CONSTRAINT_MAPPING_JSON }}
+          ADR_NEEDS_MAPPING_FILE: .tmp/adr-needs-mapping.json
+          ADR_ONLY_NEW_CONSTRAINTS: "true"
+          ADR_BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          node scripts/check-new-constraints-needing-mapping.mjs
+
+          NEEDS_COUNT="$(node -e 'const fs=require("fs");const p=process.env.ADR_NEEDS_MAPPING_FILE;const arr=JSON.parse(fs.readFileSync(p,"utf8"));process.stdout.write(String(arr.length));')"
+
+          echo "needs_count=${NEEDS_COUNT}" >> "$GITHUB_OUTPUT"
+
+          if [[ "$NEEDS_COUNT" -gt 0 ]]; then
+            echo "needs_mapping=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "needs_mapping=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Evolve mapping/templates for new constraints with Copilot
+        if: steps.detect_mapping_needs.outputs.needs_mapping == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+          ADR_NEEDS_MAPPING_FILE: .tmp/adr-needs-mapping.json
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          unset COPILOT_GITHUB_TOKEN || true
+
+          copilot -p "Reply with: auth-ok" --allow-tool=none --no-ask-user >/dev/null
+
+          PROMPT="You are evolving the ADR test mapping subsystem. Read ${ADR_NEEDS_MAPPING_FILE}. For each listed constraint, prefer a deterministic archunit implementation first. If archunit cannot represent it, create a deterministic compliance template in scripts/sync-adr-constraint-tests.mjs and add a precise mapping rule in docs/testing/adr-constraint-to-test-mapping.md before the catch-all rule. Update tests/<decision>.test.ts when routed to archunit. Maintain ADR_CONSTRAINT marker fidelity and deterministic behavior. Avoid todo placeholders. Modify only these files as needed: docs/testing/adr-constraint-to-test-mapping.md, scripts/sync-adr-constraint-tests.mjs, tests/*.test.ts."
+
+          copilot -p "$PROMPT" \
+            --allow-tool=write \
+            --allow-tool='shell(cat:*)' \
+            --allow-tool='shell(ls:*)' \
+            --allow-tool='shell(find:*)' \
+            --allow-tool='shell(grep:*)' \
+            --allow-tool='shell(node:*)' \
+            --allow-tool='shell(npm:*)' \
+            --allow-tool='shell(npx:*)' \
+            --allow-tool='shell(which:*)' \
+            --allow-tool='shell(head:*)' \
+            --allow-tool='shell(tail:*)' \
+            --allow-tool='shell(env:*)' \
+            --allow-tool='shell(pwd:*)' \
+            --allow-tool='shell(whoami:*)' \
+            --allow-tool='shell(echo:*)' \
+            --allow-tool='shell(true:*)' \
+            --allow-tool='shell(git:*)' \
+            --no-ask-user
+
+      - name: Enforce dedicated mapping for newly introduced constraints
+        if: steps.changed_adrs.outputs.has_changes == 'true'
+        env:
+          ADR_FILES: ${{ steps.changed_adrs.outputs.adr_files }}
+          ADR_CONSTRAINT_MAPPING_JSON: ${{ vars.ADR_CONSTRAINT_MAPPING_JSON }}
+          ADR_NEEDS_MAPPING_FILE: .tmp/adr-needs-mapping.json
+          ADR_ONLY_NEW_CONSTRAINTS: "true"
+          ADR_BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          ADR_FAIL_ON_NEEDS_MAPPING: "true"
+        run: node scripts/check-new-constraints-needing-mapping.mjs
+
+      - name: Detect all constraints currently relying on generic fallback
+        if: steps.changed_adrs.outputs.has_changes == 'true'
+        id: detect_all_mapping_needs
+        env:
+          ADR_FILES: ${{ steps.changed_adrs.outputs.adr_files }}
+          ADR_CONSTRAINT_MAPPING_JSON: ${{ vars.ADR_CONSTRAINT_MAPPING_JSON }}
+          ADR_NEEDS_MAPPING_FILE: .tmp/adr-needs-mapping-all.json
+          ADR_ONLY_NEW_CONSTRAINTS: "false"
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          node scripts/check-new-constraints-needing-mapping.mjs
+
+          NEEDS_COUNT="$(node -e 'const fs=require("fs");const p=process.env.ADR_NEEDS_MAPPING_FILE;const arr=JSON.parse(fs.readFileSync(p,"utf8"));process.stdout.write(String(arr.length));')"
+
+          echo "needs_count=${NEEDS_COUNT}" >> "$GITHUB_OUTPUT"
+
+          if [[ "$NEEDS_COUNT" -gt 0 ]]; then
+            echo "needs_mapping=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "needs_mapping=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Attempt migration of all generic fallback mappings with Copilot
+        if: steps.detect_all_mapping_needs.outputs.needs_mapping == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+          ADR_NEEDS_MAPPING_FILE: .tmp/adr-needs-mapping-all.json
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          unset COPILOT_GITHUB_TOKEN || true
+
+          copilot -p "Reply with: auth-ok" --allow-tool=none --no-ask-user >/dev/null
+
+          PROMPT="You are migrating ADR constraints away from generic fallback coverage. Read ${ADR_NEEDS_MAPPING_FILE}. For each listed constraint, prefer a deterministic archunit implementation first. If archunit cannot represent it, add a deterministic compliance template to scripts/sync-adr-constraint-tests.mjs and a precise mapping rule in docs/testing/adr-constraint-to-test-mapping.md before the catch-all rule. Update tests/<decision>.test.ts when routed to archunit. Keep catch-all in place as fallback, but migrate as many listed constraints as possible to dedicated mappings. Maintain ADR_CONSTRAINT marker fidelity and deterministic behavior. Avoid todo placeholders. Modify only these files as needed: docs/testing/adr-constraint-to-test-mapping.md, scripts/sync-adr-constraint-tests.mjs, tests/*.test.ts."
+
+          copilot -p "$PROMPT" \
+            --allow-tool=write \
+            --allow-tool='shell(cat:*)' \
+            --allow-tool='shell(ls:*)' \
+            --allow-tool='shell(find:*)' \
+            --allow-tool='shell(grep:*)' \
+            --allow-tool='shell(node:*)' \
+            --allow-tool='shell(npm:*)' \
+            --allow-tool='shell(npx:*)' \
+            --allow-tool='shell(which:*)' \
+            --allow-tool='shell(head:*)' \
+            --allow-tool='shell(tail:*)' \
+            --allow-tool='shell(env:*)' \
+            --allow-tool='shell(pwd:*)' \
+            --allow-tool='shell(whoami:*)' \
+            --allow-tool='shell(echo:*)' \
+            --allow-tool='shell(true:*)' \
+            --allow-tool='shell(git:*)' \
+            --no-ask-user
+
+      - name: Re-check generic fallback migration progress
+        if: steps.changed_adrs.outputs.has_changes == 'true'
+        env:
+          ADR_FILES: ${{ steps.changed_adrs.outputs.adr_files }}
+          ADR_CONSTRAINT_MAPPING_JSON: ${{ vars.ADR_CONSTRAINT_MAPPING_JSON }}
+          ADR_NEEDS_MAPPING_FILE: .tmp/adr-needs-mapping-all.json
+          ADR_ONLY_NEW_CONSTRAINTS: "false"
+        run: node scripts/check-new-constraints-needing-mapping.mjs
 
       - name: Sync mapped non-ArchUnit compliance tests
         if: steps.changed_adrs.outputs.has_changes == 'true'

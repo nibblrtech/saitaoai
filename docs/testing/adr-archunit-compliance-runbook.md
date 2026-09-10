@@ -30,15 +30,20 @@ It covers:
    - Deterministic writer for compliance-generated test files.
    - Writes tests/<decision>.compliance.test.ts based on mapping rules.
 
-4. scripts/verify-adr-constraint-coverage.mjs
+4. scripts/check-new-constraints-needing-mapping.mjs
+   - Detects newly introduced ADR constraints that are unmapped or only mapped by catch-all.
+   - Writes detail output to .tmp/adr-needs-mapping.json.
+   - Emits GitHub annotations and can fail CI when strict mode is enabled.
+
+5. scripts/verify-adr-constraint-coverage.mjs
    - Deterministic coverage verifier for ADR_CONSTRAINT markers.
    - Fails on missing mapped coverage or truly stale markers.
 
-5. docs/testing/adr-constraint-to-test-mapping.md
+6. docs/testing/adr-constraint-to-test-mapping.md
    - Mapping rule library.
    - Supports env override via ADR_CONSTRAINT_MAPPING_JSON.
 
-6. docs/decisions/
+7. docs/decisions/
    - ADR source corpus.
    - Constraints are parsed from section header: Compliance Constraints.
 
@@ -58,12 +63,18 @@ Workflow: .github/workflows/adr-archunit-test-generation.yml
 
 1. Collect ADR files.
 2. Generate/update architecture and compliance tests with Copilot.
-3. Run sync script.
-4. Run sync script again (stability pass).
-5. On pull_request, fail if tests changed in CI but were not committed.
-6. Run coverage verification.
-7. Run npm test.
-8. On push event, optionally open/update generated-test PR.
+3. Detect newly introduced constraints that still need dedicated mapping.
+4. If needed, run Copilot to evolve mapping rules/templates before deterministic sync.
+5. Enforce that newly introduced constraints are no longer unmapped/catch-all-only.
+6. Detect all constraints currently relying on catch-all/generic fallback.
+7. If any exist, run Copilot migration attempt to convert them to dedicated mappings.
+8. Re-check and report current fallback reliance after migration attempt.
+9. Run sync script.
+10. Run sync script again (stability pass).
+11. On pull_request, fail if tests changed in CI but were not committed.
+12. Run coverage verification.
+13. Run npm test.
+14. On push event, optionally open/update generated-test PR.
 
 ### Why sync runs twice
 
@@ -115,7 +126,34 @@ Optional trace marker:
 
 This marker comparison is the core keep-in-sync facility.
 
-## 3) Constraint Routing Model
+## 3) New Constraint Mapping Evolution Gate
+
+This facility runs before sync/template injection and upgrades the mapping/template library when new ADR constraints are introduced.
+
+Workflow steps:
+
+1. Run scripts/check-new-constraints-needing-mapping.mjs in "new constraints only" mode.
+2. If any new constraints are unmapped or only catch-all mapped, invoke Copilot to evolve mapping/templates.
+3. Re-run the checker in strict mode and fail CI if any new constraints still lack dedicated mapping.
+4. Continue to sync + verify only after the strict check passes.
+
+Design intent:
+
+1. Prevent new constraints from silently entering long-term catch-all coverage.
+2. Prefer deterministic archunit routing first.
+3. If archunit is not suitable, require a deterministic compliance template and precise mapping rule.
+
+Operational artifact:
+
+1. .tmp/adr-needs-mapping.json
+   - Machine-readable list of newly introduced constraints requiring dedicated mapping.
+   - Used as Copilot input during mapping/template evolution.
+
+2. .tmp/adr-needs-mapping-all.json
+   - Machine-readable list of all in-scope constraints still relying on generic fallback.
+   - Used as Copilot input for best-effort migration to dedicated mappings.
+
+## 4) Constraint Routing Model
 
 Rules are evaluated with first-match-wins semantics.
 
@@ -132,7 +170,7 @@ Mapping source precedence:
 1. ADR_CONSTRAINT_MAPPING_JSON environment variable.
 2. Local fallback: docs/testing/adr-constraint-to-test-mapping.md.
 
-## 4) Supported Constraint Template Tests
+## 5) Supported Constraint Template Tests
 
 Implemented in scripts/sync-adr-constraint-tests.mjs.
 
@@ -186,7 +224,7 @@ They include a bootstrap guard: if target component roots do not exist yet, test
    - Emits it.todo marker placeholder.
    - Supported for legacy mappings only; not preferred for new catch-all use.
 
-## 5) Operations
+## 6) Operations
 
 ### Standard local maintenance commands
 
@@ -196,15 +234,56 @@ ADR_FILES="$(printf '%s\n' docs/decisions/*.md)" node scripts/verify-adr-constra
 npm test
 ```
 
+### Optional local check for new-constraint mapping gaps
+
+```bash
+ADR_FILES="$(printf '%s\n' docs/decisions/*.md)" \
+ADR_ONLY_NEW_CONSTRAINTS=true \
+ADR_BASE_SHA="$(git rev-parse HEAD~1)" \
+node scripts/check-new-constraints-needing-mapping.mjs
+```
+
+### Optional local check for all current fallback-mapped constraints
+
+```bash
+ADR_FILES="$(printf '%s\n' docs/decisions/*.md)" \
+ADR_ONLY_NEW_CONSTRAINTS=false \
+ADR_NEEDS_MAPPING_FILE=.tmp/adr-needs-mapping-all.json \
+node scripts/check-new-constraints-needing-mapping.mjs
+```
+
+### New-constraint checker environment variables
+
+1. ADR_ONLY_NEW_CONSTRAINTS
+   - true: compare current constraints to ADR constraints at ADR_BASE_SHA and only evaluate newly introduced constraints.
+   - false/unset: evaluate all current constraints.
+
+2. ADR_BASE_SHA
+   - Base git ref/sha used when ADR_ONLY_NEW_CONSTRAINTS=true.
+
+3. ADR_NEEDS_MAPPING_FILE
+   - Output file path for needs list JSON.
+   - Default: .tmp/adr-needs-mapping.json.
+
+4. ADR_CATCH_ALL_RULE_ID
+   - Rule id treated as catch-all bootstrap mapping.
+   - Default: compliance-catch-all-bootstrap.
+
+5. ADR_FAIL_ON_NEEDS_MAPPING
+   - true: fail process if any constraint in scope still needs dedicated mapping.
+
 ### CI policy behavior on ADR changes
 
 1. ADR workflow regenerates + syncs + verifies.
 2. On pull_request, if sync changed tests but commit did not include those updates, CI fails with a clear message.
 3. This prevents merging ADR changes with stale generated test files.
-4. If a constraint matches only the catch-all rule, the workflow surfaces it as a constraint that needs dedicated test mapping.
-5. Optional strict mode: set ADR_FAIL_ON_BOOTSTRAP_MAPPING=true to fail CI whenever any constraint still relies on the catch-all rule.
+4. New-constraint mapping evolution runs before sync and attempts to produce dedicated mappings/templates automatically.
+5. If newly introduced constraints still need dedicated mapping after evolution, CI fails.
+6. Workflow also attempts migration for all constraints currently mapped to catch-all/generic fallback (best effort, non-blocking).
+7. If a constraint matches only the catch-all rule, the workflow surfaces it as a constraint that needs dedicated test mapping.
+8. Optional strict mode: set ADR_FAIL_ON_BOOTSTRAP_MAPPING=true to fail CI whenever any in-scope constraint still relies on the catch-all rule.
 
-## 6) Organization Portability
+## 7) Organization Portability
 
 ### Shared mapping strategy
 
@@ -242,7 +321,7 @@ Preferred:
 }
 ```
 
-## 7) Troubleshooting
+## 8) Troubleshooting
 
 1. Coverage mismatch: stale marker
    - Meaning: ADR removed/remapped constraint, but old marker still exists in tests.
@@ -260,7 +339,15 @@ Preferred:
    - Meaning: the constraint matched the catch-all rule instead of a dedicated mapping/template.
    - Action: add a precise mapping rule and, when needed, a dedicated template implementation.
 
-5. PR fails with "ADR-derived tests are out of date"
+5. New-constraint strict gate failed
+   - Meaning: newly introduced constraints remained unmapped/catch-all-only after evolution step.
+   - Action: inspect .tmp/adr-needs-mapping.json, then add dedicated mapping(s) and template/archunit implementation.
+
+6. Generic fallback migration made partial progress only
+   - Meaning: workflow attempted migration for catch-all-mapped constraints, but some remain.
+   - Action: inspect .tmp/adr-needs-mapping-all.json and iteratively add precise rules/templates.
+
+7. PR fails with "ADR-derived tests are out of date"
    - Meaning: CI sync produced diffs under tests.
    - Action: run sync locally and include generated test diffs in commit.
 
