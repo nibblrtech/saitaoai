@@ -28,8 +28,8 @@ function walkTsFiles(rootDir: string): string[] {
 
 describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constraints", () => {
   // ADR_CONSTRAINT: The order book component shall maintain separate bid-side and ask-side structures for each instrument and shall not share mutable state across instruments--even if they want to.
-  // ADR_MAPPING_RULE: compliance-catch-all-bootstrap
-  it("should provide implementation evidence for this constraint", () => {
+  // ADR_MAPPING_RULE: compliance-instrument-isolation
+  it("should provide instrument isolation evidence for this constraint", () => {
     const candidateRoots = ["src/order-book"];
     const existingRoots = candidateRoots.filter((root) => existsSync(root));
 
@@ -48,20 +48,14 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms: string[] = ["order", "book", "instrument"];
-
-    // If term extraction yields no terms, this stays as a bootstrap pass.
-    if (requiredTerms.length === 0) {
-      expect(true).toBe(true);
-      return;
-    }
-
+    const requiredTerms: string[] = ["instrument", "isolat"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
+
     expect(missingTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The order book component shall enforce instrument-level isolation so that events for one instrument cannot mutate another instrument book.
-  // ADR_MAPPING_RULE: compliance-catch-all-bootstrap
-  it("should provide implementation evidence for this constraint", () => {
+  // ADR_MAPPING_RULE: compliance-instrument-isolation
+  it("should provide instrument isolation evidence for this constraint", () => {
     const candidateRoots = ["src/order-book"];
     const existingRoots = candidateRoots.filter((root) => existsSync(root));
 
@@ -80,15 +74,9 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms: string[] = ["order", "book", "instrument-level"];
-
-    // If term extraction yields no terms, this stays as a bootstrap pass.
-    if (requiredTerms.length === 0) {
-      expect(true).toBe(true);
-      return;
-    }
-
+    const requiredTerms: string[] = ["instrument", "isolat"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
+
     expect(missingTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The order book component shall treat all accepted state transitions as a totally ordered sequence of events per instrument.
@@ -146,8 +134,8 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
     expect(missingTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The order book component shall use price-time priority within each side for price levels and orders at each level.
-  // ADR_MAPPING_RULE: compliance-catch-all-bootstrap
-  it("should provide implementation evidence for this constraint", () => {
+  // ADR_MAPPING_RULE: compliance-price-time-priority
+  it("should provide price-time priority evidence for this constraint", () => {
     const candidateRoots = ["src/order-book"];
     const existingRoots = candidateRoots.filter((root) => existsSync(root));
 
@@ -166,20 +154,14 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms: string[] = ["order", "book", "priority"];
-
-    // If term extraction yields no terms, this stays as a bootstrap pass.
-    if (requiredTerms.length === 0) {
-      expect(true).toBe(true);
-      return;
-    }
-
+    const requiredTerms: string[] = ["price", "priority", "time"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
+
     expect(missingTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The order book component shall preserve original queue position for each resting order unless that order is canceled, fully filled, or replaced according to explicit replace semantics.
-  // ADR_MAPPING_RULE: compliance-catch-all-bootstrap
-  it("should provide implementation evidence for this constraint", () => {
+  // ADR_MAPPING_RULE: compliance-queue-position-preservation
+  it("should provide queue position evidence for this constraint", () => {
     const candidateRoots = ["src/order-book"];
     const existingRoots = candidateRoots.filter((root) => existsSync(root));
 
@@ -198,15 +180,9 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms: string[] = ["order", "book", "queue"];
-
-    // If term extraction yields no terms, this stays as a bootstrap pass.
-    if (requiredTerms.length === 0) {
-      expect(true).toBe(true);
-      return;
-    }
-
+    const requiredTerms: string[] = ["queue", "position"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
+
     expect(missingTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The order book component shall support only limit, market, and stop-limit order intentions in v1 and shall reject unsupported order types.
@@ -288,8 +264,8 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
     expect(missingTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The order book component shall not allow the active continuous-trading book to remain crossed after processing a mutation event.
-  // ADR_MAPPING_RULE: compliance-catch-all-bootstrap
-  it("should provide implementation evidence for this constraint", () => {
+  // ADR_MAPPING_RULE: compliance-book-crossing-prevention
+  it("should provide book crossing evidence for this constraint", () => {
     const candidateRoots = ["src/order-book"];
     const existingRoots = candidateRoots.filter((root) => existsSync(root));
 
@@ -308,15 +284,9 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms: string[] = ["order", "book", "event"];
-
-    // If term extraction yields no terms, this stays as a bootstrap pass.
-    if (requiredTerms.length === 0) {
-      expect(true).toBe(true);
-      return;
-    }
-
+    const requiredTerms: string[] = ["cross"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
+
     expect(missingTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The order book component shall support partial fill accounting and shall keep remaining open quantity exact and non-negative.
@@ -398,41 +368,9 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
 
     expect(missingTerms).toEqual([]);
   });
-  // ADR_CONSTRAINT: The order book component shall not execute network calls or blocking remote procedure calls on the mutation path.
-  // ADR_MAPPING_RULE: compliance-catch-all-bootstrap
-  it("should provide implementation evidence for this constraint", () => {
-    const candidateRoots = ["src/order-book"];
-    const existingRoots = candidateRoots.filter((root) => existsSync(root));
-
-    // Bootstrap guard: until component code exists, this test is a no-op and stays green.
-    if (existingRoots.length === 0) {
-      expect(true).toBe(true);
-      return;
-    }
-
-    const tsFiles = Array.from(
-      new Set(existingRoots.flatMap((root) => walkTsFiles(root)))
-    );
-
-    const corpus = tsFiles
-      .map((file) => readFileSync(file, "utf8"))
-      .join("\n")
-      .toLowerCase();
-
-    const requiredTerms: string[] = ["order", "book"];
-
-    // If term extraction yields no terms, this stays as a bootstrap pass.
-    if (requiredTerms.length === 0) {
-      expect(true).toBe(true);
-      return;
-    }
-
-    const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
-    expect(missingTerms).toEqual([]);
-  });
   // ADR_CONSTRAINT: The order book component shall read static instrument metadata from a versioned reference data snapshot that is immutable during a processing cycle.
-  // ADR_MAPPING_RULE: compliance-catch-all-bootstrap
-  it("should provide implementation evidence for this constraint", () => {
+  // ADR_MAPPING_RULE: compliance-reference-data-snapshot
+  it("should provide reference data snapshot evidence for this constraint", () => {
     const candidateRoots = ["src/order-book"];
     const existingRoots = candidateRoots.filter((root) => existsSync(root));
 
@@ -451,20 +389,14 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms: string[] = ["order", "book", "instrument"];
-
-    // If term extraction yields no terms, this stays as a bootstrap pass.
-    if (requiredTerms.length === 0) {
-      expect(true).toBe(true);
-      return;
-    }
-
+    const requiredTerms: string[] = ["snapshot", "reference"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
+
     expect(missingTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The order book component shall use a monotonic in-process clock source for internal ordering diagnostics and a wall clock source for persisted event timestamps.
-  // ADR_MAPPING_RULE: compliance-catch-all-bootstrap
-  it("should provide implementation evidence for this constraint", () => {
+  // ADR_MAPPING_RULE: compliance-clock-source-separation
+  it("should provide clock source evidence for this constraint", () => {
     const candidateRoots = ["src/order-book"];
     const existingRoots = candidateRoots.filter((root) => existsSync(root));
 
@@ -483,15 +415,9 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms: string[] = ["order", "book", "monotonic"];
-
-    // If term extraction yields no terms, this stays as a bootstrap pass.
-    if (requiredTerms.length === 0) {
-      expect(true).toBe(true);
-      return;
-    }
-
+    const requiredTerms: string[] = ["clock", "monotonic"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
+
     expect(missingTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The order book component shall support deterministic replay from the append-only journal and shall produce an identical final state for identical ordered input.
@@ -547,41 +473,9 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
 
     expect(missingTerms).toEqual([]);
   });
-  // ADR_CONSTRAINT: The order book component shall expose only query interfaces for derived views such as best bid, best ask, spread, and depth, and these query interfaces shall be side-effect free.
-  // ADR_MAPPING_RULE: compliance-catch-all-bootstrap
-  it("should provide implementation evidence for this constraint", () => {
-    const candidateRoots = ["src/order-book"];
-    const existingRoots = candidateRoots.filter((root) => existsSync(root));
-
-    // Bootstrap guard: until component code exists, this test is a no-op and stays green.
-    if (existingRoots.length === 0) {
-      expect(true).toBe(true);
-      return;
-    }
-
-    const tsFiles = Array.from(
-      new Set(existingRoots.flatMap((root) => walkTsFiles(root)))
-    );
-
-    const corpus = tsFiles
-      .map((file) => readFileSync(file, "utf8"))
-      .join("\n")
-      .toLowerCase();
-
-    const requiredTerms: string[] = ["order", "book", "spread"];
-
-    // If term extraction yields no terms, this stays as a bootstrap pass.
-    if (requiredTerms.length === 0) {
-      expect(true).toBe(true);
-      return;
-    }
-
-    const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
-    expect(missingTerms).toEqual([]);
-  });
   // ADR_CONSTRAINT: The order book component shall prevent duplicate order identifiers within the same trading session for a given participant and instrument.
-  // ADR_MAPPING_RULE: compliance-catch-all-bootstrap
-  it("should provide implementation evidence for this constraint", () => {
+  // ADR_MAPPING_RULE: compliance-duplicate-order-id-prevention
+  it("should provide duplicate order identifier evidence for this constraint", () => {
     const candidateRoots = ["src/order-book"];
     const existingRoots = candidateRoots.filter((root) => existsSync(root));
 
@@ -600,15 +494,9 @@ describe("0001-order-book-architecture: Generated Non-ArchUnit Compliance Constr
       .join("\n")
       .toLowerCase();
 
-    const requiredTerms: string[] = ["order", "book", "prevent"];
-
-    // If term extraction yields no terms, this stays as a bootstrap pass.
-    if (requiredTerms.length === 0) {
-      expect(true).toBe(true);
-      return;
-    }
-
+    const requiredTerms: string[] = ["duplicate", "identifier"];
     const missingTerms = requiredTerms.filter((term) => !corpus.includes(term));
+
     expect(missingTerms).toEqual([]);
   });
   // ADR_CONSTRAINT: The order book component shall support explicit session-state transitions such as pre-open, open, halt, and closed, and shall reject order actions not permitted in the current state.

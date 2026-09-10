@@ -117,6 +117,56 @@ describe("ADR-0001: Order Book Architecture – Compliance Constraints", () => {
       .check();
   });
 
+  // ADR_CONSTRAINT: The order book component shall not execute network calls or blocking remote procedure calls on the mutation path.
+  it("order book mutation-path modules should not import network or transport packages", () => {
+    modules(p)
+      .that()
+      .resideInFolder("**/src/order-book/{domain,application}/**")
+      .should()
+      .notImportFrom(
+        "http",
+        "https",
+        "net",
+        "dns",
+        "node:http",
+        "node:https",
+        "node:net",
+        "node:dns",
+        "axios",
+        "node-fetch",
+        "undici",
+        "ws",
+        "**/transport/**",
+        "**/adapters/**"
+      )
+      .rule({
+        id: "order-book/mutation-path-no-network-calls",
+        because:
+          "The order book component shall not execute network calls or blocking remote procedure calls on the mutation path",
+        suggestion:
+          "Keep the mutation path free of network/transport imports; perform I/O outside the order book domain and application layers",
+      })
+      .check();
+  });
+
+  // ADR_CONSTRAINT: The order book component shall expose only query interfaces for derived views such as best bid, best ask, spread, and depth, and these query interfaces shall be side-effect free.
+  it("Query classes should reside in the order book domain layer alongside other stable read models", () => {
+    classes(p)
+      .that()
+      .haveNameEndingWith("Query")
+      .resideInFolder("**/src/order-book/**")
+      .should()
+      .resideInFolder("**/src/order-book/domain/**")
+      .rule({
+        id: "order-book/queries-in-domain",
+        because:
+          "The order book component shall expose only query interfaces for derived views such as best bid, best ask, spread, and depth, and these query interfaces shall be side-effect free",
+        suggestion:
+          "Keep Query classes in src/order-book/domain/ and free of write access to book state",
+      })
+      .check();
+  });
+
   // ADR_CONSTRAINT: The order book component shall expose stable domain models so that matching, surveillance, and market data components can consume events without reading internal storage structures.
   it("order book infrastructure should not be imported from outside the order book module", () => {
     modules(p)

@@ -65,6 +65,7 @@ describe("ADR-0003: Market Data Distribution Architecture – Compliance Constra
       .check();
   });
 
+  // ADR_CONSTRAINT: The market data distribution component shall keep class naming conventions where normalizer classes end with Normalizer, sequencer classes end with Sequencer, and serializer classes end with Serializer.
   it("Normalizer classes should reside in market data domain or application layers", () => {
     classes(p)
       .that()
@@ -82,6 +83,7 @@ describe("ADR-0003: Market Data Distribution Architecture – Compliance Constra
       .check();
   });
 
+  // ADR_CONSTRAINT: The market data distribution component shall keep class naming conventions where normalizer classes end with Normalizer, sequencer classes end with Sequencer, and serializer classes end with Serializer.
   it("Sequencer classes should reside in market data domain or application layers", () => {
     classes(p)
       .that()
@@ -99,6 +101,7 @@ describe("ADR-0003: Market Data Distribution Architecture – Compliance Constra
       .check();
   });
 
+  // ADR_CONSTRAINT: The market data distribution component shall keep class naming conventions where normalizer classes end with Normalizer, sequencer classes end with Sequencer, and serializer classes end with Serializer.
   it("Serializer classes should reside in market data infrastructure layer", () => {
     classes(p)
       .that()
@@ -116,6 +119,8 @@ describe("ADR-0003: Market Data Distribution Architecture – Compliance Constra
       .check();
   });
 
+  // ADR_CONSTRAINT: The market data distribution component shall use adapter classes to implement transport protocols and shall prevent domain classes from importing adapter packages.
+  // ADR_CONSTRAINT: The market data distribution component shall use adapter classes to implement transport protocols and shall prevent domain classes from importing adapter packages.
   it("market data domain and application layers should not import transport adapter implementations", () => {
     modules(p)
       .that()
@@ -128,6 +133,28 @@ describe("ADR-0003: Market Data Distribution Architecture – Compliance Constra
           "The market data distribution component shall use adapter classes to implement transport protocols and shall prevent domain classes from importing adapter packages",
         suggestion:
           "Depend on domain interfaces rather than infrastructure implementations; inject adapters via dependency injection",
+      })
+      .check();
+  });
+
+  // ADR_CONSTRAINT: The market data distribution component shall consume only canonical domain events emitted by the matching engine and order book components.
+  it("market data domain layer should only consume canonical domain events from matching engine and order book", () => {
+    modules(p)
+      .that()
+      .resideInFolder("**/src/market-data/domain/**")
+      .should()
+      .notImportFrom(
+        "**/src/matching-engine/application/**",
+        "**/src/matching-engine/infrastructure/**",
+        "**/src/order-book/application/**",
+        "**/src/order-book/infrastructure/**"
+      )
+      .rule({
+        id: "market-data/domain-only-canonical-events",
+        because:
+          "The market data distribution component shall consume only canonical domain events emitted by the matching engine and order book components",
+        suggestion:
+          "Import only the canonical domain event contracts published by matching engine and order book; avoid their application or infrastructure internals",
       })
       .check();
   });
