@@ -178,6 +178,7 @@ They include a bootstrap guard: if target component roots do not exist yet, test
 6. general-evidence
    - Catch-all executable evidence test.
    - Uses constrained term extraction to avoid generic false-positive terms.
+   - Intended as a fallback only when a constraint does not yet have a dedicated test mapping.
 
 ### Legacy placeholder template
 
@@ -200,6 +201,8 @@ npm test
 1. ADR workflow regenerates + syncs + verifies.
 2. On pull_request, if sync changed tests but commit did not include those updates, CI fails with a clear message.
 3. This prevents merging ADR changes with stale generated test files.
+4. If a constraint matches only the catch-all rule, the workflow surfaces it as a constraint that needs dedicated test mapping.
+5. Optional strict mode: set ADR_FAIL_ON_BOOTSTRAP_MAPPING=true to fail CI whenever any constraint still relies on the catch-all rule.
 
 ## 6) Organization Portability
 
@@ -253,7 +256,11 @@ Preferred:
    - Meaning: no mapping rule matched the constraint text.
    - Action: add or refine mapping rule; avoid over-broad patterns.
 
-4. PR fails with "ADR-derived tests are out of date"
+4. Constraint needs dedicated test mapping
+   - Meaning: the constraint matched the catch-all rule instead of a dedicated mapping/template.
+   - Action: add a precise mapping rule and, when needed, a dedicated template implementation.
+
+5. PR fails with "ADR-derived tests are out of date"
    - Meaning: CI sync produced diffs under tests.
    - Action: run sync locally and include generated test diffs in commit.
 

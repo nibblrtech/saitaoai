@@ -192,14 +192,14 @@ function logMappingSummary(adrFile, classifications) {
 
   if (bootstrapOnly.length > 0) {
     console.warn(
-      "- bootstrap-only constraints (matched catch-all rule; add a dedicated mapping/template):"
+      "- constraints that need dedicated test mapping (matched catch-all rule):"
     );
     for (const item of bootstrapOnly) {
       console.warn(`  - ${item.constraint}`);
       emitGitHubAnnotation(
         shouldFailOnBootstrapMapping() ? "error" : "warning",
         adrFile,
-        `Bootstrap-only ADR constraint matched catch-all rule '${item.rule.id}': ${item.constraint}`
+        `ADR constraint needs dedicated test mapping; matched catch-all rule '${item.rule.id}': ${item.constraint}`
       );
     }
   }
@@ -238,7 +238,7 @@ for (const adrFile of adrFiles) {
   ) {
     hasFailure = true;
     console.error(
-      `Bootstrap-only mapping is disallowed by ${FAIL_ON_BOOTSTRAP_MAPPING_ENV} for ${adrFile}`
+      `Catch-all mapped constraints are disallowed by ${FAIL_ON_BOOTSTRAP_MAPPING_ENV} for ${adrFile}; add dedicated test mappings.`
     );
   }
 

@@ -3,13 +3,20 @@ name: Maintain ADR Architecture and Compliance Tests
 on:
   workflow_dispatch:
   push:
-    branches: ["main", "master"]
     paths:
       - "docs/decisions/**"
+      - "docs/testing/adr-constraint-to-test-mapping.md"
+      - "scripts/sync-adr-constraint-tests.mjs"
+      - "scripts/verify-adr-constraint-coverage.mjs"
+      - ".github/workflows/**"
   pull_request:
     branches: ["main", "master"]
     paths:
       - "docs/decisions/**"
+      - "docs/testing/adr-constraint-to-test-mapping.md"
+      - "scripts/sync-adr-constraint-tests.mjs"
+      - "scripts/verify-adr-constraint-coverage.mjs"
+      - ".github/workflows/**"
 
 jobs:
   generate-adr-tests:
@@ -167,7 +174,7 @@ jobs:
           fi
 
       - name: Create Pull Request for generated tests
-        if: github.event_name == 'push' && steps.changed_adrs.outputs.has_changes == 'true' && steps.detect_changes.outputs.tests_changed == 'true'
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') && steps.changed_adrs.outputs.has_changes == 'true' && steps.detect_changes.outputs.tests_changed == 'true'
         uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
