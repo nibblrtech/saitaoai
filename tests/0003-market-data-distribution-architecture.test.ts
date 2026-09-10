@@ -71,7 +71,7 @@ describe("ADR-0003: Market Data Distribution Architecture – Compliance Constra
       .haveNameEndingWith("Normalizer")
       .resideInFolder("**/src/market-data/**")
       .should()
-      .resideInFolder("**/src/market-data/domain/**", "**/src/market-data/application/**")
+      .resideInFolder("**/src/market-data/{domain,application}/**")
       .rule({
         id: "market-data/normalizers-in-domain-or-application",
         because:
@@ -88,7 +88,7 @@ describe("ADR-0003: Market Data Distribution Architecture – Compliance Constra
       .haveNameEndingWith("Sequencer")
       .resideInFolder("**/src/market-data/**")
       .should()
-      .resideInFolder("**/src/market-data/domain/**", "**/src/market-data/application/**")
+      .resideInFolder("**/src/market-data/{domain,application}/**")
       .rule({
         id: "market-data/sequencers-in-domain-or-application",
         because:
@@ -119,10 +119,7 @@ describe("ADR-0003: Market Data Distribution Architecture – Compliance Constra
   it("market data domain and application layers should not import transport adapter implementations", () => {
     modules(p)
       .that()
-      .resideInFolder(
-        "**/src/market-data/domain/**",
-        "**/src/market-data/application/**"
-      )
+      .resideInFolder("**/src/market-data/{domain,application}/**")
       .should()
       .notImportFrom("**/src/market-data/infrastructure/**")
       .rule({
